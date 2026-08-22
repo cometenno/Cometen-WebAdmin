@@ -94,3 +94,7 @@ CometenUrlGuard_SettingsJson
 The public build contains no production Discord webhook URLs, private LAN addresses, Windows usernames, production absolute paths, private platform IDs or private IRL endpoints.
 
 Private values must be configured locally after installation.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
