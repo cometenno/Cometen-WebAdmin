@@ -22,13 +22,27 @@ Public release: **1.0**
 - Optional IRL alert forwarding
 - Full Cometen visual theme
 
-## Quick install
+## Download
+
+Use the GitHub v1.0 release asset:
+
+```text
+CometenWebAdmin_1.0_Public.zip
+```
+
+SHA-256:
+
+```text
+7dbfa5f9b127e8d3ed362126f7af3e50e3ab7669885980c83a9d347f06469335
+```
 
 The release ZIP contains one top-level folder:
 
 ```text
 CometenWebAdmin
 ```
+
+## Quick install
 
 Open your Streamer.bot installation and extract the ZIP inside:
 
@@ -64,8 +78,17 @@ See [INSTALL.md](INSTALL.md) for the complete guide.
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Security](SECURITY.md)
 - [Release checklist](docs/RELEASE_CHECKLIST.md)
+- [Checksums](CHECKSUMS.txt)
 
-## Public-release security
+## Tested fixes included in 1.0
+
+Public 1.0 contains the Chat Pip persistence fix tested on both machines and the URL Guard JSON-state persistence fix using:
+
+```text
+CometenUrlGuard_SettingsJson
+```
+
+## Security
 
 The public build contains no production Discord webhook URLs, private LAN addresses, Windows usernames, production absolute paths, private platform IDs or private IRL endpoints.
 
