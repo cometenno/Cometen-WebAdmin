@@ -13,6 +13,7 @@
 - [IRL Integration](IRL-Integration)
 - [Troubleshooting](Troubleshooting)
 - [Security](Security)
+- [Release Notes](Release-Notes)
 
 ---
 
