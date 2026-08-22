@@ -69,6 +69,7 @@ See [INSTALL.md](INSTALL.md) for the complete guide.
 ## Documentation
 
 - [Installation](INSTALL.md)
+- [WebAdmin module guide](docs/WEBADMIN.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Network / LAN](docs/NETWORK_SETUP.md)
 - [Streamer.bot](docs/STREAMERBOT_SETUP.md)
