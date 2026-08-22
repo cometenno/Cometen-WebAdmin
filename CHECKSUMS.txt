@@ -1,0 +1,5 @@
+Cometen WebAdmin 1.0 public release checksums
+
+SHA-256  7dbfa5f9b127e8d3ed362126f7af3e50e3ab7669885980c83a9d347f06469335  CometenWebAdmin_1.0_Public.zip
+SHA-256  1af1a42ab459aecee2e136bcf8610a837cdfc3717d22e07bb7be31ca6d3f9e70  Cometen_WebAdmin_1.0.sb
+SHA-256  f401ab9cafacd8820c6a055820d1c9db9816aed4d58913bcb218ac28aa785c87  Cometen_WebAdmin.html
