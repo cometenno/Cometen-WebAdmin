@@ -1,0 +1,60 @@
+name: Sync Wiki
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'wiki/**'
+      - '.github/workflows/sync-wiki.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cometen-webadmin-wiki
+  cancel-in-progress: true
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Validate wiki source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f wiki/Home.md
+          test -f wiki/_Sidebar.md
+          count=$(find wiki -maxdepth 1 -type f -name '*.md' | wc -l)
+          echo "Wiki pages found: $count"
+          test "$count" -ge 10
+
+      - name: Publish wiki
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+          git clone "$WIKI_URL" wiki-repo
+
+          find wiki-repo -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a wiki/. wiki-repo/
+
+          cd wiki-repo
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+
+          git commit -m "Sync Cometen WebAdmin 1.0 documentation"
+          git push origin HEAD:master
