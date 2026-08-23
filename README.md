@@ -68,6 +68,8 @@ See [INSTALL.md](INSTALL.md) for the complete guide.
 
 ## Documentation
 
+- [GitHub Wiki](https://github.com/la1ona/Cometen-WebAdmin/wiki)
+- [Documentation index](docs/README.md)
 - [Installation](INSTALL.md)
 - [WebAdmin module guide](docs/WEBADMIN.md)
 - [Architecture](docs/ARCHITECTURE.md)
@@ -80,6 +82,8 @@ See [INSTALL.md](INSTALL.md) for the complete guide.
 - [Security](SECURITY.md)
 - [Release checklist](docs/RELEASE_CHECKLIST.md)
 - [Checksums](CHECKSUMS.txt)
+
+The Markdown files in `wiki/` are the maintained source for the GitHub Wiki and are published by the `Sync Wiki` workflow.
 
 ## Tested fixes included in 1.0
 
