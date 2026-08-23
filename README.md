@@ -70,6 +70,7 @@ See [INSTALL.md](INSTALL.md) for the complete guide.
 
 - [GitHub Wiki](https://github.com/la1ona/Cometen-WebAdmin/wiki)
 - [Documentation index](docs/README.md)
+- [Project history](HISTORY.md)
 - [Installation](INSTALL.md)
 - [WebAdmin module guide](docs/WEBADMIN.md)
 - [Architecture](docs/ARCHITECTURE.md)
@@ -84,6 +85,10 @@ See [INSTALL.md](INSTALL.md) for the complete guide.
 - [Checksums](CHECKSUMS.txt)
 
 The Markdown files in `wiki/` are the maintained source for the GitHub Wiki and are published by the `Sync Wiki` workflow.
+
+## Development from 1.0 onward
+
+All new public WebAdmin development continues in this repository. The previous private development repository is retained only as a legacy archive/reference and is no longer the active development target.
 
 ## Tested fixes included in 1.0
 
