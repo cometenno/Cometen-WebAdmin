@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.release-source/runtime-v1.0.zip'
+      - '.github/SOURCE_IMPORT_REQUEST'
 
 permissions:
   contents: write
@@ -17,15 +17,103 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Extract sanitized runtime source
+      - name: Download official v1.0 release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          unzip -o .release-source/runtime-v1.0.zip -d .
-          rm -f .release-source/runtime-v1.0.zip
-          rmdir .release-source 2>/dev/null || true
+          asset_url=$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" \
+            --jq '.assets[] | select(.name == "CometenWebAdmin_1.0_Public.zip") | .url' | head -n1)
+          test -n "$asset_url"
+          gh api -H 'Accept: application/octet-stream' "$asset_url" > /tmp/CometenWebAdmin_1.0_Public.zip
+          unzip -q /tmp/CometenWebAdmin_1.0_Public.zip -d /tmp/cwa-release
+          test -d /tmp/cwa-release/CometenWebAdmin
 
-      - name: Verify source tree
+      - name: Import runtime files and extract readable Streamer.bot source
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkg=/tmp/cwa-release/CometenWebAdmin
+
+          rm -rf web alerts assets streamerbot
+          mkdir -p web assets streamerbot/source streamerbot/decoded
+
+          cp "$pkg/Cometen_WebAdmin.html" web/Cometen_WebAdmin.html
+          cp "$pkg/Cometen Chat Overlay.html" web/Cometen_Chat_Overlay.html
+          cp "$pkg/cometen_credits_CWA.html" web/cometen_credits_CWA.html
+          cp -a "$pkg/alerts" ./alerts
+          cp "$pkg/chat-pip.mp3" assets/chat-pip.mp3
+          cp "$pkg/Cometen_WebAdmin_1.0.sb" streamerbot/Cometen_WebAdmin_1.0.sb
+          cp "$pkg/tools/verify-install.ps1" tools/verify-install.ps1
+
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip, json, re
+
+          sb = Path('streamerbot/Cometen_WebAdmin_1.0.sb')
+          raw = base64.b64decode(sb.read_text(encoding='utf-8').strip())
+          if raw[:4] != b'SBAE':
+              raise RuntimeError('Unexpected Streamer.bot export header')
+
+          export = json.loads(gzip.decompress(raw[4:]))
+          Path('streamerbot/decoded/Cometen_WebAdmin_1.0.export.json').write_text(
+              json.dumps(export, ensure_ascii=False, indent=2), encoding='utf-8'
+          )
+
+          source_dir = Path('streamerbot/source')
+          source_dir.mkdir(parents=True, exist_ok=True)
+          for old in source_dir.glob('*.cs'):
+              old.unlink()
+
+          manifest = []
+          used = set()
+
+          def safe_name(name):
+              value = re.sub(r'[^A-Za-z0-9._-]+', '_', name).strip('_') or 'Action'
+              return value[:120]
+
+          for action in export['data']['actions']:
+              csharp_index = 0
+              for sub_index, sub in enumerate(action.get('subActions', [])):
+                  if sub.get('type') != 99999 or not sub.get('byteCode'):
+                      continue
+                  csharp_index += 1
+                  base = safe_name(action['name'])
+                  filename = f'{base}.cs' if csharp_index == 1 else f'{base}__{csharp_index}.cs'
+                  suffix = 2
+                  candidate = filename
+                  while candidate in used:
+                      stem = filename[:-3]
+                      candidate = f'{stem}_{suffix}.cs'
+                      suffix += 1
+                  filename = candidate
+                  used.add(filename)
+                  code = base64.b64decode(sub['byteCode'])
+                  (source_dir / filename).write_bytes(code)
+                  manifest.append({
+                      'action': action['name'],
+                      'subActionIndex': sub_index,
+                      'file': f'streamerbot/source/{filename}'
+                  })
+
+          Path('streamerbot/SOURCE_MANIFEST.json').write_text(
+              json.dumps({
+                  'export': 'Cometen_WebAdmin_1.0.sb',
+                  'actions': len(export['data']['actions']),
+                  'csharpSubActions': len(manifest),
+                  'sources': manifest
+              }, ensure_ascii=False, indent=2),
+              encoding='utf-8'
+          )
+
+          if len(export['data']['actions']) != 57:
+              raise RuntimeError(f'Expected 57 actions, got {len(export["data"]["actions"])}')
+          if len(manifest) != 59:
+              raise RuntimeError(f'Expected 59 C# sub-actions, got {len(manifest)}')
+          PY
+
+      - name: Security and consistency checks
         shell: bash
         run: |
           set -euo pipefail
@@ -38,8 +126,7 @@ jobs:
           test -f streamerbot/decoded/Cometen_WebAdmin_1.0.export.json
           test -f streamerbot/SOURCE_MANIFEST.json
           test -f tools/verify-install.ps1
-          count=$(find streamerbot/source -maxdepth 1 -type f -name '*.cs' | wc -l)
-          test "$count" -eq 59
+          test "$(find streamerbot/source -maxdepth 1 -type f -name '*.cs' | wc -l)" -eq 59
 
           if grep -RInE --binary-files=without-match 'discord(app)?\.com/api/webhooks|192\.168\.|[A-Za-z]:\\Users\\|D:\\stream' web alerts streamerbot tools; then
             echo 'Potential private value found in imported source.' >&2
@@ -50,9 +137,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -f .github/SOURCE_IMPORT_REQUEST
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A .release-source web alerts streamerbot tools
+          git add -A .github/SOURCE_IMPORT_REQUEST web alerts assets streamerbot tools
           if git diff --cached --quiet; then
             echo 'Source tree already current.'
             exit 0
