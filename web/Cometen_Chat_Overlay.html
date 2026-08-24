@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cometen Chat Overlay V6 CWA</title>
+<style>
+  :root {
+    --bg: rgba(10, 10, 12, 0.30);
+    --card-bg: rgba(18, 18, 22, 0.86);
+    --border: rgba(255, 176, 0, 0.50);
+    --name: #ffb000;
+    --text: #f4f4f4;
+    --broadcaster: #ffb000;
+    --mod: #33d17a;
+    --vip: #d783ff;
+    --sub: #66c2ff;
+    --shadow: rgba(0, 0, 0, 0.55);
+
+    --name-size: 28px;
+    --text-size: 30px;
+    --badge-size: 14px;
+    --card-radius: 14px;
+    --card-padding-y: 14px;
+    --card-padding-x: 16px;
+    --message-gap: 12px;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #status {
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.72);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid rgba(255, 176, 0, 0.4);
+    opacity: 0.95;
+    z-index: 999;
+  }
+
+  #chatBox {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    width: calc(100% - 36px);
+    max-height: calc(100% - 36px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: var(--message-gap);
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius: 18px;
+    background: var(--bg);
+  }
+
+  .msg {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: var(--card-padding-y) var(--card-padding-x);
+    box-shadow: 0 8px 22px var(--shadow);
+    opacity: 0;
+    transform: translateX(-26px);
+    animation: slideIn 260ms ease-out forwards;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .topline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    line-height: 1.15;
+  }
+
+  .name {
+    font-weight: 800;
+    color: var(--name);
+    font-size: var(--name-size);
+  }
+
+  .badge {
+    font-size: var(--badge-size);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    color: #0f0f0f;
+    text-transform: uppercase;
+  }
+
+  .badge.broadcaster { background: var(--broadcaster); }
+  .badge.mod { background: var(--mod); }
+  .badge.vip { background: var(--vip); }
+  .badge.sub { background: var(--sub); }
+
+  .text {
+    font-size: var(--text-size);
+    line-height: 1.28;
+    color: var(--text);
+    text-shadow: 0 2px 3px rgba(0,0,0,0.45);
+  }
+
+  .fadeOut {
+    animation: fadeOut 450ms ease-in forwards;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-26px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); max-height: 260px; }
+    to { opacity: 0; transform: translateX(-26px); max-height: 0; margin: 0; padding-top: 0; padding-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+  <div id="status">Cometen Chat</div>
+  <div id="chatBox"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  function cwaBuildWebSocketUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const savedHost = localStorage.getItem("cwa_ws_host");
+    const savedPort = localStorage.getItem("cwa_ws_port");
+    const host =
+      params.get("host") ||
+      savedHost ||
+      ((window.location.protocol === "http:" || window.location.protocol === "https:")
+        ? window.location.hostname
+        : "127.0.0.1");
+    const port = params.get("port") || savedPort || "8081";
+    return "ws://" + host + ":" + port + "/";
+  }
+
+  const CONFIG = {
+    websocketUrl: cwaBuildWebSocketUrl(),
+
+    maxMessages: 5,
+    displayTimeMs: 60000,
+    fadeTimeMs: 450,
+
+    ignoreCommands: true,
+    commandPrefix: "!",
+    ignoreUsers: [
+      "nightbot",
+      "streamelements",
+      "streamlabs",
+      "moobot",
+      "wizebot"
+    ],
+
+    showStatus: false,
+    demoOnLoad: false,
+
+    // Used by Streamer.bot C# config action.
+    configMarker: "COMETEN_CHAT_CONFIG_V6|",
+
+    // WebAdmin / Streamer.bot action used to pull current globals when the overlay loads.
+    configActionName: "CWA - Chat Send Config",
+    requestConfigOnLoad: true,
+    requestConfigDelayMs: 500
+  };
+
+  const chatBox = document.getElementById("chatBox");
+  const statusBox = document.getElementById("status");
+  let socket = null;
+  let reconnectTimer = null;
+
+  function setStatus(text) {
+    if (!CONFIG.showStatus) {
+      statusBox.style.display = "none";
+      return;
+    }
+
+    statusBox.style.display = "block";
+    statusBox.textContent = text;
+  }
+
+  function connect() {
+    clearTimeout(reconnectTimer);
+    setStatus("Cometen Chat: connecting...");
+
+    try {
+      socket = new WebSocket(CONFIG.websocketUrl);
+
+      socket.onopen = function () {
+        setStatus("Cometen Chat: connected");
+        subscribeToEvents();
+
+        if (CONFIG.requestConfigOnLoad) {
+          setTimeout(requestConfigFromStreamerBot, CONFIG.requestConfigDelayMs);
+        }
+      };
+
+      socket.onmessage = function (event) {
+        handleIncoming(event.data);
+      };
+
+      socket.onclose = function () {
+        setStatus("Cometen Chat: disconnected");
+        reconnectTimer = setTimeout(connect, 2500);
+      };
+
+      socket.onerror = function () {
+        try { socket.close(); } catch (e) {}
+      };
+    } catch (e) {
+      reconnectTimer = setTimeout(connect, 2500);
+    }
+  }
+
+  function subscribeToEvents() {
+    sendWs({
+      request: "Subscribe",
+      id: "cometen-chat-v6-subscribe",
+      events: {
+        Twitch: [
+          "ChatMessage",
+          "ChatMessageDeleted",
+          "ChatCleared"
+        ],
+        General: [
+          "Custom"
+        ]
+      }
+    });
+  }
+
+  function sendWs(obj) {
+    try {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify(obj));
+      }
+    } catch (e) {}
+  }
+
+  function requestConfigFromStreamerBot() {
+    if (!CONFIG.configActionName) return;
+
+    sendWs({
+      request: "DoAction",
+      id: "cometen-chat-v6-request-config-" + Date.now(),
+      action: {
+        name: CONFIG.configActionName
+      },
+      args: {
+        source: "CometenChatOverlay",
+        reason: "overlay-load"
+      }
+    });
+
+    setStatus("Cometen Chat: requesting config...");
+  }
+
+  function handleIncoming(raw) {
+    const rawText = String(raw || "");
+
+    const config = parseConfigFromRaw(rawText);
+    if (config) {
+      applySettings(config);
+      return;
+    }
+
+    let data = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch (e) {
+      return;
+    }
+
+    const parsed = parseTwitchChatEvent(data);
+
+    if (parsed) {
+      addMessage(parsed);
+    }
+  }
+
+  function parseConfigFromRaw(rawText) {
+    const strings = [];
+
+    collectStrings(rawText, strings, 0);
+
+    let parsedRoot = null;
+    try {
+      parsedRoot = JSON.parse(String(rawText || ""));
+      collectStrings(parsedRoot, strings, 0);
+
+      const direct = findDirectConfigObject(parsedRoot, 0);
+      if (direct) return direct;
+    } catch (e) {}
+
+    for (let i = 0; i < strings.length; i++) {
+      const text = String(strings[i] || "");
+      const idx = text.indexOf(CONFIG.configMarker);
+      if (idx < 0) continue;
+
+      let payload = text.substring(idx + CONFIG.configMarker.length).trim();
+      payload = cleanEncodedPayload(payload);
+
+      try {
+        const jsonText = decodeURIComponent(payload);
+        const obj = JSON.parse(jsonText);
+        return normalizeConfigObject(obj);
+      } catch (e) {}
+    }
+
+    return null;
+  }
+
+  function cleanEncodedPayload(payload) {
+    if (!payload) return "";
+
+    const cutMarkers = ["\\\"", "\"", "\\n", "\n", "\r"];
+
+    for (let i = 0; i < cutMarkers.length; i++) {
+      const marker = cutMarkers[i];
+      const idx = payload.indexOf(marker);
+      if (idx >= 0) payload = payload.substring(0, idx);
+    }
+
+    return payload.trim();
+  }
+
+  function findDirectConfigObject(value, depth) {
+    if (depth > 8 || value === null || value === undefined || typeof value !== "object") return null;
+
+    if (looksLikeConfigObject(value)) {
+      return normalizeConfigObject(value);
+    }
+
+    for (const key in value) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+      const found = findDirectConfigObject(value[key], depth + 1);
+      if (found) return found;
+    }
+
+    return null;
+  }
+
+  function looksLikeConfigObject(obj) {
+    if (!obj || typeof obj !== "object") return false;
+
+    const source = safeLower(obj.source || "");
+    const type = safeLower(obj.type || "");
+
+    if (source === "cometenwebadmin" && type === "chat_settings") return true;
+
+    return Object.prototype.hasOwnProperty.call(obj, "displayTimeMs") &&
+           Object.prototype.hasOwnProperty.call(obj, "maxMessages") &&
+           Object.prototype.hasOwnProperty.call(obj, "textSize");
+  }
+
+  function normalizeConfigObject(obj) {
+    if (!obj || typeof obj !== "object") return obj;
+
+    const copy = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) copy[key] = obj[key];
+    }
+
+    if (typeof copy.ignoreUsers === "string") {
+      copy.ignoreUsers = splitCsv(copy.ignoreUsers);
+    } else if (!Array.isArray(copy.ignoreUsers) && typeof copy.ignoreUsersText === "string") {
+      copy.ignoreUsers = splitCsv(copy.ignoreUsersText);
+    }
+
+    return copy;
+  }
+
+  function splitCsv(text) {
+    if (typeof text !== "string") return [];
+
+    return text
+      .split(",")
+      .map(function (item) { return item.trim().replace(/^@/, "").toLowerCase(); })
+      .filter(Boolean);
+  }
+
+  function collectStrings(value, list, depth) {
+    if (depth > 8 || value === null || value === undefined) return;
+
+    if (typeof value === "string") {
+      list.push(value);
+
+      try {
+        const parsed = JSON.parse(value);
+        collectStrings(parsed, list, depth + 1);
+      } catch (e) {}
+
+      return;
+    }
+
+    if (typeof value === "object") {
+      for (const key in value) {
+        if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+        collectStrings(value[key], list, depth + 1);
+      }
+    }
+  }
+
+  function applySettings(settings) {
+    if (!settings || typeof settings !== "object") return;
+
+    setInt("maxMessages", settings.maxMessages, 1, 20);
+    setInt("displayTimeMs", settings.displayTimeMs, 1000, 600000);
+    setInt("fadeTimeMs", settings.fadeTimeMs, 100, 10000);
+
+    if (typeof settings.ignoreCommands === "boolean") CONFIG.ignoreCommands = settings.ignoreCommands;
+    if (typeof settings.commandPrefix === "string" && settings.commandPrefix.length > 0) CONFIG.commandPrefix = settings.commandPrefix;
+
+    if (Array.isArray(settings.ignoreUsers)) {
+      CONFIG.ignoreUsers = settings.ignoreUsers.map(u => String(u).trim().replace(/^@/, "").toLowerCase()).filter(Boolean);
+    } else if (typeof settings.ignoreUsers === "string") {
+      CONFIG.ignoreUsers = splitCsv(settings.ignoreUsers);
+    } else if (typeof settings.ignoreUsersText === "string") {
+      CONFIG.ignoreUsers = splitCsv(settings.ignoreUsersText);
+    }
+
+    setCssColor("--bg", settings.background);
+    setCssColor("--card-bg", settings.cardBackground);
+    setCssColor("--border", settings.borderColor);
+    setCssColor("--name", settings.nameColor);
+    setCssColor("--text", settings.textColor);
+    setCssColor("--broadcaster", settings.broadcasterColor);
+    setCssColor("--mod", settings.modColor);
+    setCssColor("--vip", settings.vipColor);
+    setCssColor("--sub", settings.subColor);
+    setCssColor("--shadow", settings.shadowColor);
+
+    setCssPx("--name-size", settings.nameSize, 10, 80);
+    setCssPx("--text-size", settings.textSize, 10, 90);
+    setCssPx("--badge-size", settings.badgeSize, 8, 40);
+    setCssPx("--card-radius", settings.cardRadius, 0, 40);
+    setCssPx("--card-padding-y", settings.cardPaddingY, 0, 40);
+    setCssPx("--card-padding-x", settings.cardPaddingX, 0, 50);
+    setCssPx("--message-gap", settings.messageGap, 0, 40);
+
+    setStatus("Cometen Chat: config updated");
+  }
+
+  function setInt(key, value, min, max) {
+    const n = parseInt(value, 10);
+    if (isNaN(n)) return;
+    CONFIG[key] = Math.max(min, Math.min(max, n));
+  }
+
+  function setCssPx(name, value, min, max) {
+    const n = parseInt(value, 10);
+    if (isNaN(n)) return;
+    const clamped = Math.max(min, Math.min(max, n));
+    document.documentElement.style.setProperty(name, clamped + "px");
+  }
+
+  function setCssColor(name, value) {
+    if (typeof value !== "string") return;
+    value = value.trim();
+    if (!value) return;
+    document.documentElement.style.setProperty(name, value);
+  }
+
+  function parseTwitchChatEvent(data) {
+    const src = safeLower(getPath(data, ["event", "source"]) || data.source || "");
+    const type = safeLower(getPath(data, ["event", "type"]) || data.type || data.eventType || "");
+    const fullText = safeLower(JSON.stringify(data || {}));
+
+    const looksLikeChat =
+      (src.indexOf("twitch") >= 0 && type.indexOf("chatmessage") >= 0) ||
+      (fullText.indexOf('"source":"twitch"') >= 0 && fullText.indexOf('"type":"chatmessage"') >= 0) ||
+      fullText.indexOf("twitch.chatmessage") >= 0;
+
+    if (!looksLikeChat) return null;
+
+    const payload = data.data || data.payload || data;
+
+    const message =
+      findStringByKeys(payload, [
+        "message",
+        "text",
+        "rawInput",
+        "input",
+        "chatMessage",
+        "messageText"
+      ]);
+
+    const user =
+      findStringByKeys(payload, [
+        "userName",
+        "displayName",
+        "userDisplayName",
+        "user",
+        "login",
+        "userLogin",
+        "username",
+        "name"
+      ]) || "Viewer";
+
+    if (!message || !String(message).trim()) return null;
+
+    if (CONFIG.ignoreCommands && String(message).trim().startsWith(CONFIG.commandPrefix)) return null;
+
+    const cleanUser = String(user).trim().replace(/^@/, "").toLowerCase();
+    if (CONFIG.ignoreUsers.indexOf(cleanUser) >= 0) return null;
+
+    const role = findRole(payload);
+
+    return {
+      user: String(user),
+      role: role,
+      message: String(message)
+    };
+  }
+
+  function findRole(obj) {
+    const text = safeLower(JSON.stringify(obj || {}));
+
+    if (text.indexOf("broadcaster") >= 0) return "broadcaster";
+    if (text.indexOf("moderator") >= 0 || text.indexOf('"ismod":true') >= 0) return "mod";
+    if (text.indexOf("vip") >= 0) return "vip";
+    if (text.indexOf("subscriber") >= 0 || text.indexOf('"issub":true') >= 0) return "sub";
+
+    return "viewer";
+  }
+
+  function findStringByKeys(obj, keys) {
+    const seen = new Set();
+    return findStringRecursive(obj, keys.map(k => k.toLowerCase()), seen, 0);
+  }
+
+  function findStringRecursive(value, keysLower, seen, depth) {
+    if (depth > 8 || value === null || value === undefined) return "";
+    if (typeof value !== "object") return "";
+    if (seen.has(value)) return "";
+
+    seen.add(value);
+
+    for (const key in value) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+
+      const val = value[key];
+      const keyLower = key.toLowerCase();
+
+      if (keysLower.indexOf(keyLower) >= 0 && typeof val === "string" && val.trim()) {
+        return val;
+      }
+    }
+
+    for (const key in value) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+
+      const found = findStringRecursive(value[key], keysLower, seen, depth + 1);
+      if (found) return found;
+    }
+
+    return "";
+  }
+
+  function getPath(obj, path) {
+    let cur = obj;
+    for (let i = 0; i < path.length; i++) {
+      if (!cur || typeof cur !== "object") return null;
+      cur = cur[path[i]];
+    }
+    return cur;
+  }
+
+  function safeLower(value) {
+    return String(value || "").toLowerCase();
+  }
+
+  function addMessage(data) {
+    const role = normalizeRole(data.role);
+    const msg = document.createElement("div");
+    msg.className = "msg";
+
+    const top = document.createElement("div");
+    top.className = "topline";
+
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = data.user;
+
+    top.appendChild(name);
+
+    const badgeText = badgeLabel(role);
+    if (badgeText) {
+      const badge = document.createElement("span");
+      badge.className = "badge " + role;
+      badge.textContent = badgeText;
+      top.appendChild(badge);
+    }
+
+    const text = document.createElement("div");
+    text.className = "text";
+    text.textContent = data.message;
+
+    msg.appendChild(top);
+    msg.appendChild(text);
+
+    chatBox.appendChild(msg);
+
+    while (chatBox.children.length > CONFIG.maxMessages) {
+      chatBox.removeChild(chatBox.firstElementChild);
+    }
+
+    setTimeout(function () {
+      msg.classList.add("fadeOut");
+      setTimeout(function () {
+        if (msg.parentNode) msg.parentNode.removeChild(msg);
+      }, CONFIG.fadeTimeMs + 80);
+    }, CONFIG.displayTimeMs);
+  }
+
+  function normalizeRole(role) {
+    role = String(role || "viewer").toLowerCase();
+    if (role.indexOf("broadcaster") >= 0) return "broadcaster";
+    if (role.indexOf("moderator") >= 0 || role === "mod") return "mod";
+    if (role.indexOf("vip") >= 0) return "vip";
+    if (role.indexOf("subscriber") >= 0 || role === "sub") return "sub";
+    return "viewer";
+  }
+
+  function badgeLabel(role) {
+    if (role === "broadcaster") return "HOST";
+    if (role === "mod") return "MOD";
+    if (role === "vip") return "VIP";
+    if (role === "sub") return "SUB";
+    return "";
+  }
+
+  if (CONFIG.demoOnLoad) {
+    setTimeout(function () {
+      addMessage({
+        user: "Cometen Chat",
+        role: "broadcaster",
+        message: "Overlay loaded."
+      });
+    }, 600);
+  }
+
+  connect();
+})();
+</script>
+</body>
+</html>
