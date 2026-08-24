@@ -1,8 +1,8 @@
 name: Import runtime source tree
 
 on:
-  push:
-    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
     paths:
       - '.github/SOURCE_IMPORT_REQUEST'
 
@@ -11,11 +11,13 @@ permissions:
 
 jobs:
   import-source:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout source-import branch
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Download official v1.0 release asset
         env:
@@ -63,9 +65,6 @@ jobs:
 
           source_dir = Path('streamerbot/source')
           source_dir.mkdir(parents=True, exist_ok=True)
-          for old in source_dir.glob('*.cs'):
-              old.unlink()
-
           manifest = []
           used = set()
 
@@ -81,16 +80,15 @@ jobs:
                   csharp_index += 1
                   base = safe_name(action['name'])
                   filename = f'{base}.cs' if csharp_index == 1 else f'{base}__{csharp_index}.cs'
-                  suffix = 2
                   candidate = filename
+                  suffix = 2
                   while candidate in used:
                       stem = filename[:-3]
                       candidate = f'{stem}_{suffix}.cs'
                       suffix += 1
                   filename = candidate
                   used.add(filename)
-                  code = base64.b64decode(sub['byteCode'])
-                  (source_dir / filename).write_bytes(code)
+                  (source_dir / filename).write_bytes(base64.b64decode(sub['byteCode']))
                   manifest.append({
                       'action': action['name'],
                       'subActionIndex': sub_index,
@@ -133,7 +131,7 @@ jobs:
             exit 1
           fi
 
-      - name: Commit visible runtime source
+      - name: Commit source to pull-request branch
         shell: bash
         run: |
           set -euo pipefail
@@ -141,9 +139,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A .github/SOURCE_IMPORT_REQUEST web alerts assets streamerbot tools
-          if git diff --cached --quiet; then
-            echo 'Source tree already current.'
-            exit 0
-          fi
           git commit -m "Add sanitized WebAdmin 1.0 runtime source [skip ci]"
-          git push
+          git push origin HEAD:${{ github.head_ref }}
