@@ -1,0 +1,511 @@
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Bits
+// ORIGINAL FILE: CWA_-_Alerts_Bits.cs
+// ============================================================================
+
+// Bruk på Twitch Cheer / Bits trigger.
+
+using System;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        // Bytt denne linjen for hver action:
+        // follow, raid, sub, resub, gift_sub, community_gift, bits,
+        // channel_points, hype_train_start, hype_train_level, hype_train_end,
+        // shoutout, charity, goal, custom
+        string alert = "bits";
+
+        string user = GetArg("userName", "displayName", "fromUser", "fromUserName", "targetUser", "name", "login");
+        string amount = GetArg("viewerCount", "viewers", "raidViewerCount", "raiderViewerCount", "bits", "giftCount", "communitySubGiftCount", "amount", "count", "total");
+        string months = GetArg("cumulativeMonths", "months", "tenure", "durationMonths");
+        string tier = GetArg("tier", "subTier");
+        string reward = GetArg("rewardName", "reward", "title");
+        string message = GetArg("message", "userInput", "rawInput", "text");
+        string level = GetArg("level", "hypeTrainLevel");
+        string goal = GetArg("goal", "goalName", "title");
+
+        if (string.IsNullOrWhiteSpace(user))
+            user = "Unknown";
+
+        string json =
+            "{"
+            + "\"source\":\"CometenAlerts\","
+            + "\"type\":\"COMETEN_ALERT\","
+            + "\"alert\":\"" + EscapeJson(alert) + "\","
+            + "\"user\":\"" + EscapeJson(user) + "\","
+            + "\"name\":\"" + EscapeJson(user) + "\","
+            + "\"amount\":\"" + EscapeJson(amount) + "\","
+            + "\"viewers\":\"" + EscapeJson(amount) + "\","
+            + "\"viewerCount\":\"" + EscapeJson(amount) + "\","
+            + "\"count\":\"" + EscapeJson(amount) + "\","
+            + "\"months\":\"" + EscapeJson(months) + "\","
+            + "\"tier\":\"" + EscapeJson(tier) + "\","
+            + "\"reward\":\"" + EscapeJson(reward) + "\","
+            + "\"message\":\"" + EscapeJson(message) + "\","
+            + "\"level\":\"" + EscapeJson(level) + "\","
+            + "\"goal\":\"" + EscapeJson(goal) + "\""
+            + "}";
+
+        CPH.LogInfo("COMETEN ALERT JSON: " + json);
+        CPH.WebsocketBroadcastString(json);
+
+        return true;
+    }
+
+    private string GetArg(params string[] keys)
+    {
+        foreach (string key in keys)
+        {
+            if (args.ContainsKey(key) && args[key] != null)
+            {
+                string value = args[key].ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+        }
+
+        return "";
+    }
+
+    private string EscapeJson(string value)
+    {
+        if (value == null)
+            return "";
+
+        return value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"");
+    }
+}
+
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Clear
+// ORIGINAL FILE: CWA_-_Alerts_Clear.cs
+// ============================================================================
+
+using Newtonsoft.Json;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        CPH.WebsocketBroadcastString(JsonConvert.SerializeObject(new {
+            source = "CometenWebAdmin",
+            type = "COMETEN_ALERT_CONTROL",
+            command = "clear"
+        }));
+        string result = "Active alert stopped and queue cleared.";
+        CPH.SetGlobalVar("CometenAlerts_LastResult", result, true);
+        CPH.WebsocketBroadcastString(JsonConvert.SerializeObject(new {
+            source = "CometenWebAdmin",
+            type = "ALERTS_RESULT",
+            result = result
+        }));
+        return true;
+    }
+}
+
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Donation
+// ORIGINAL FILE: CWA_-_Alerts_Donation.cs
+// ============================================================================
+
+// Bruk på Charity / Donation trigger hvis du bruker det.
+
+using System;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        // Bytt denne linjen for hver action:
+        // follow, raid, sub, resub, gift_sub, community_gift, bits,
+        // channel_points, hype_train_start, hype_train_level, hype_train_end,
+        // shoutout, charity, goal, custom
+        string alert = "charity";
+
+        string user = GetArg("userName", "displayName", "fromUser", "fromUserName", "targetUser", "name", "login");
+        string amount = GetArg("viewerCount", "viewers", "raidViewerCount", "raiderViewerCount", "bits", "giftCount", "communitySubGiftCount", "amount", "count", "total");
+        string months = GetArg("cumulativeMonths", "months", "tenure", "durationMonths");
+        string tier = GetArg("tier", "subTier");
+        string reward = GetArg("rewardName", "reward", "title");
+        string message = GetArg("message", "userInput", "rawInput", "text");
+        string level = GetArg("level", "hypeTrainLevel");
+        string goal = GetArg("goal", "goalName", "title");
+
+        if (string.IsNullOrWhiteSpace(user))
+            user = "Unknown";
+
+        string json =
+            "{"
+            + "\"source\":\"CometenAlerts\","
+            + "\"type\":\"COMETEN_ALERT\","
+            + "\"alert\":\"" + EscapeJson(alert) + "\","
+            + "\"user\":\"" + EscapeJson(user) + "\","
+            + "\"name\":\"" + EscapeJson(user) + "\","
+            + "\"amount\":\"" + EscapeJson(amount) + "\","
+            + "\"viewers\":\"" + EscapeJson(amount) + "\","
+            + "\"viewerCount\":\"" + EscapeJson(amount) + "\","
+            + "\"count\":\"" + EscapeJson(amount) + "\","
+            + "\"months\":\"" + EscapeJson(months) + "\","
+            + "\"tier\":\"" + EscapeJson(tier) + "\","
+            + "\"reward\":\"" + EscapeJson(reward) + "\","
+            + "\"message\":\"" + EscapeJson(message) + "\","
+            + "\"level\":\"" + EscapeJson(level) + "\","
+            + "\"goal\":\"" + EscapeJson(goal) + "\""
+            + "}";
+
+        CPH.LogInfo("COMETEN ALERT JSON: " + json);
+        CPH.WebsocketBroadcastString(json);
+
+        return true;
+    }
+
+    private string GetArg(params string[] keys)
+    {
+        foreach (string key in keys)
+        {
+            if (args.ContainsKey(key) && args[key] != null)
+            {
+                string value = args[key].ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+        }
+
+        return "";
+    }
+
+    private string EscapeJson(string value)
+    {
+        if (value == null)
+            return "";
+
+        return value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"");
+    }
+}
+
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Follow
+// ORIGINAL FILE: CWA_-_Alerts_Follow.cs
+// ============================================================================
+
+using System;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        string user = GetArg("userName", "displayName", "fromUser", "fromUserName", "targetUser", "name");
+
+        if (string.IsNullOrWhiteSpace(user))
+            user = "Unknown";
+
+        string json =
+            "{"
+            + "\"source\":\"CometenAlerts\","
+            + "\"type\":\"COMETEN_ALERT\","
+            + "\"alert\":\"follow\","
+            + "\"user\":\"" + EscapeJson(user) + "\","
+            + "\"name\":\"" + EscapeJson(user) + "\""
+            + "}";
+
+        CPH.LogInfo("COMETEN FOLLOW ALERT: " + json);
+        CPH.WebsocketBroadcastString(json);
+
+        return true;
+    }
+
+    private string GetArg(params string[] keys)
+    {
+        foreach (string key in keys)
+        {
+            if (args.ContainsKey(key) && args[key] != null)
+            {
+                string value = args[key].ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+        }
+
+        return "";
+    }
+
+    private string EscapeJson(string value)
+    {
+        if (value == null)
+            return "";
+
+        return value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"");
+    }
+}
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Gift Bomb
+// ORIGINAL FILE: CWA_-_Alerts_Gift_Bomb.cs
+// ============================================================================
+
+using System;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        string user = args.ContainsKey("userName") ? args["userName"].ToString() : "Cometen Viewer";
+        string count = "";
+
+        if (args.ContainsKey("giftCount")) count = args["giftCount"].ToString();
+        else if (args.ContainsKey("count")) count = args["count"].ToString();
+        else if (args.ContainsKey("amount")) count = args["amount"].ToString();
+        else if (args.ContainsKey("totalGiftedSubs")) count = args["totalGiftedSubs"].ToString();
+        else if (args.ContainsKey("communitySubGiftCount")) count = args["communitySubGiftCount"].ToString();
+
+        CPH.WebsocketBroadcastString(
+            "{\"type\":\"COMETEN_ALERT\",\"alert\":\"giftbomb\",\"user\":\"" + Escape(user) + "\",\"count\":\"" + Escape(count) + "\"}"
+        );
+
+        return true;
+    }
+
+    private string Escape(string value)
+    {
+        return (value ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+    }
+}
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Gifted Sub
+// ORIGINAL FILE: CWA_-_Alerts_Gifted_Sub.cs
+// ============================================================================
+
+// Bruk på Twitch Gift Sub trigger.
+
+using System;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        // Bytt denne linjen for hver action:
+        // follow, raid, sub, resub, gift_sub, community_gift, bits,
+        // channel_points, hype_train_start, hype_train_level, hype_train_end,
+        // shoutout, charity, goal, custom
+        string alert = "gift_sub";
+
+        string user = GetArg("userName", "displayName", "fromUser", "fromUserName", "targetUser", "name", "login");
+        string amount = GetArg("viewerCount", "viewers", "raidViewerCount", "raiderViewerCount", "bits", "giftCount", "communitySubGiftCount", "amount", "count", "total");
+        string months = GetArg("cumulativeMonths", "months", "tenure", "durationMonths");
+        string tier = GetArg("tier", "subTier");
+        string reward = GetArg("rewardName", "reward", "title");
+        string message = GetArg("message", "userInput", "rawInput", "text");
+        string level = GetArg("level", "hypeTrainLevel");
+        string goal = GetArg("goal", "goalName", "title");
+
+        if (string.IsNullOrWhiteSpace(user))
+            user = "Unknown";
+
+        string json =
+            "{"
+            + "\"source\":\"CometenAlerts\","
+            + "\"type\":\"COMETEN_ALERT\","
+            + "\"alert\":\"" + EscapeJson(alert) + "\","
+            + "\"user\":\"" + EscapeJson(user) + "\","
+            + "\"name\":\"" + EscapeJson(user) + "\","
+            + "\"amount\":\"" + EscapeJson(amount) + "\","
+            + "\"viewers\":\"" + EscapeJson(amount) + "\","
+            + "\"viewerCount\":\"" + EscapeJson(amount) + "\","
+            + "\"count\":\"" + EscapeJson(amount) + "\","
+            + "\"months\":\"" + EscapeJson(months) + "\","
+            + "\"tier\":\"" + EscapeJson(tier) + "\","
+            + "\"reward\":\"" + EscapeJson(reward) + "\","
+            + "\"message\":\"" + EscapeJson(message) + "\","
+            + "\"level\":\"" + EscapeJson(level) + "\","
+            + "\"goal\":\"" + EscapeJson(goal) + "\""
+            + "}";
+
+        CPH.LogInfo("COMETEN ALERT JSON: " + json);
+        CPH.WebsocketBroadcastString(json);
+
+        return true;
+    }
+
+    private string GetArg(params string[] keys)
+    {
+        foreach (string key in keys)
+        {
+            if (args.ContainsKey(key) && args[key] != null)
+            {
+                string value = args[key].ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+        }
+
+        return "";
+    }
+
+    private string EscapeJson(string value)
+    {
+        if (value == null)
+            return "";
+
+        return value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"");
+    }
+}
+
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Raid
+// ORIGINAL FILE: CWA_-_Alerts_Raid.cs
+// ============================================================================
+
+using System;
+using System.Threading;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        string user = GetArg("userName", "displayName", "fromUser", "fromUserName", "raider", "targetUser", "name", "login");
+        string viewers = GetArg("viewerCount", "viewers", "raidViewerCount", "raiderViewerCount", "viewer_count", "amount", "count");
+
+        if (string.IsNullOrWhiteSpace(user))
+            user = "Unknown";
+
+        if (string.IsNullOrWhiteSpace(viewers))
+            viewers = "0";
+
+        // 1. Raid alert til universal_twitch_alerts.html
+        string raidJson =
+            "{"
+            + "\"source\":\"CometenAlerts\","
+            + "\"type\":\"COMETEN_ALERT\","
+            + "\"alert\":\"raid\","
+            + "\"user\":\"" + EscapeJson(user) + "\","
+            + "\"name\":\"" + EscapeJson(user) + "\","
+            + "\"amount\":\"" + EscapeJson(viewers) + "\","
+            + "\"viewers\":\"" + EscapeJson(viewers) + "\","
+            + "\"viewerCount\":\"" + EscapeJson(viewers) + "\","
+            + "\"count\":\"" + EscapeJson(viewers) + "\""
+            + "}";
+
+        CPH.WebsocketBroadcastString(raidJson);
+        CPH.LogInfo("COMETEN RAID ALERT: " + raidJson);
+
+        Thread.Sleep(1500);
+
+        // 2. Twitch sin ekte shoutout
+        try
+        {
+            bool soOk = CPH.TwitchSendShoutoutByLogin(user);
+            CPH.LogInfo("COMETEN TWITCH SHOUTOUT til " + user + ": " + soOk);
+        }
+        catch (Exception ex)
+        {
+            CPH.LogWarn("COMETEN TWITCH SHOUTOUT FEIL: " + ex.Message);
+        }
+
+        Thread.Sleep(1500);
+
+        // 3. Video shoutout til din video SO overlay
+        string videoJson =
+            "{"
+            + "\"type\":\"VIDEO_SHOUTOUT\","
+            + "\"user\":\"" + EscapeJson(user) + "\","
+            + "\"targetUser\":\"" + EscapeJson(user) + "\","
+            + "\"name\":\"" + EscapeJson(user) + "\""
+            + "}";
+
+        CPH.WebsocketBroadcastString(videoJson);
+        CPH.LogInfo("COMETEN VIDEO SHOUTOUT: " + videoJson);
+
+        return true;
+    }
+
+    private string GetArg(params string[] keys)
+    {
+        foreach (string key in keys)
+        {
+            if (args.ContainsKey(key) && args[key] != null)
+            {
+                string value = args[key].ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+        }
+
+        return "";
+    }
+
+    private string EscapeJson(string value)
+    {
+        if (value == null)
+            return "";
+
+        return value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"");
+    }
+}
+
+
+// ============================================================================
+// SOURCE ACTION: CWA - Alerts Raid  2
+// ORIGINAL FILE: CWA_-_Alerts_Raid__2.cs
+// ============================================================================
+
+using System;
+using System.Linq;
+
+public class CPHInline
+{
+    public bool Execute()
+    {
+        var scene = CPH.GetGlobalVar<string>("ShoutOutScene", true);
+        var source = CPH.GetGlobalVar<string>("ShoutOutBrowserSource", true);
+        var videoplayerfile = CPH.GetGlobalVar<string>("ShoutOutFile", true);
+        string userName = args["targetUser"].ToString();
+        var allClips = CPH.GetClipsForUser(userName);
+        if (allClips.Count == 0)
+        {
+            CPH.SendMessage("This streamer doesn't have any clips! :(");
+            return false;
+        }
+
+        var randomClip = allClips.OrderBy(c => Guid.NewGuid()).First();
+        CPH.SetArgument("randomClipBroadcaster", randomClip.BroadcasterName);
+        CPH.SetArgument("randomClipTitle", randomClip.Title);
+        CPH.SetArgument("randomClipUrl", randomClip.Url);
+        CPH.SetArgument("randomClipDuration", randomClip.Duration);
+        CPH.SetArgument("randomClipUser", randomClip.CreatorName);
+        CPH.SetArgument("randomClipViewCount", randomClip.ViewCount);
+        CPH.SetArgument("randomClipThumbnailUrl", randomClip.ThumbnailUrl);
+        // Create embed iframe from the URL - not currently used, but leaving in place should Twitch API's / naming system change so we can update with HTML update
+        string embedURL = randomClip.Url;
+        embedURL = embedURL.Replace("twitch.tv/", "twitch.tv/embed?clip=");
+        CPH.SetArgument("randomClipEmbedUrl", embedURL);
+        videoplayerfile += "?user=" + randomClip.BroadcasterName;
+        videoplayerfile += "&image=" + args["targetUserProfileImageUrl"].ToString();
+        videoplayerfile += "&video=" + embedURL;
+        videoplayerfile += "&thumbnail_url=" + randomClip.ThumbnailUrl;
+        int delay = 700 + (int)(randomClip.Duration * 1000);
+        videoplayerfile += "&time=" + delay;
+        CPH.ObsSetBrowserSource(scene, source, videoplayerfile);
+        //Increase the delay passed to the source by 2 seconds for loading
+        delay += 2000;
+        CPH.Wait(delay);
+        CPH.ObsSetBrowserSource(scene, source, "about:blank");
+        return true;
+    }
+}
