@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0" />
+  <title>Universal Alert Hub V8.3 - Existing Setup Compatible</title>
+  <style>
+    :root {
+      --alert-left: 540px;
+      --alert-top: 360px;
+      --alert-width: 1120px;
+      --alert-height: 360px;
+      --gold: #f0a900;
+      --gold-light: #ffd56a;
+      --shadow: rgba(0, 0, 0, 0.95);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: transparent;
+      font-family: var(--alert-font, Impact, "Arial Black", Arial, sans-serif);
+    }
+
+    #stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.985);
+      transition: opacity 450ms ease, transform 450ms ease;
+    }
+
+    #stage.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #bg {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      object-fit: cover;
+    }
+
+    #content {
+      position: absolute;
+      left: var(--alert-left);
+      top: var(--alert-top);
+      width: var(--alert-width);
+      height: var(--alert-height);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+      padding: 20px 50px;
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 550ms ease 200ms, transform 550ms ease 200ms;
+    }
+
+    #stage.show #content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #userText {
+      max-width: 100%;
+      color: var(--user-color, var(--gold-light));
+      font-size: var(--user-size, 82px);
+      line-height: 0.95;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-shadow:
+        0 0 8px #000,
+        0 0 18px #000,
+        0 0 22px rgba(255, 174, 0, 0.45),
+        4px 4px 0 var(--shadow);
+    }
+
+    #messageText {
+      max-width: 100%;
+      margin-top: 26px;
+      color: var(--message-color, var(--gold));
+      font-size: var(--message-size, 44px);
+      line-height: 1.1;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      text-shadow:
+        0 0 8px #000,
+        0 0 14px #000,
+        3px 3px 0 var(--shadow);
+    }
+
+    #glow {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 174, 0, 0.16), transparent 36%);
+      transition: opacity 450ms ease;
+      mix-blend-mode: screen;
+    }
+
+    #stage.show #glow {
+      opacity: 1;
+      animation: glowPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.9; }
+    }
+
+    #stage.anim-pop.show { animation: stagePopIn 620ms cubic-bezier(.18,.89,.32,1.35) forwards; }
+    #stage.anim-slide_up.show { animation: stageSlideUpIn 650ms cubic-bezier(.18,.89,.32,1.18) forwards; }
+    #stage.anim-slide_left.show { animation: stageSlideLeftIn 650ms cubic-bezier(.18,.89,.32,1.18) forwards; }
+    #stage.anim-slide_right.show { animation: stageSlideRightIn 650ms cubic-bezier(.18,.89,.32,1.18) forwards; }
+    #stage.anim-shake.show { animation: stageShakeIn 720ms cubic-bezier(.18,.89,.32,1.22) forwards; }
+    #stage.anim-glitch.show { animation: stageGlitchIn 760ms steps(8) forwards; }
+    #stage.anim-drop.show { animation: stageDropIn 680ms cubic-bezier(.18,.89,.32,1.18) forwards; }
+
+    @keyframes stagePopIn {
+      0% { opacity: 0; transform: scale(0.76); filter: blur(7px); }
+      72% { opacity: 1; transform: scale(1.025); filter: blur(0); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+
+    @keyframes stageSlideUpIn {
+      0% { opacity: 0; transform: translateY(46px) scale(0.985); filter: blur(6px); }
+      72% { opacity: 1; transform: translateY(-8px) scale(1.005); filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    @keyframes stageSlideLeftIn {
+      0% { opacity: 0; transform: translateX(-90px) scale(0.985); filter: blur(6px); }
+      72% { opacity: 1; transform: translateX(8px) scale(1.005); filter: blur(0); }
+      100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+    }
+
+    @keyframes stageSlideRightIn {
+      0% { opacity: 0; transform: translateX(90px) scale(0.985); filter: blur(6px); }
+      72% { opacity: 1; transform: translateX(-8px) scale(1.005); filter: blur(0); }
+      100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+    }
+
+    @keyframes stageShakeIn {
+      0% { opacity: 0; transform: scale(0.985) translateX(0); filter: blur(6px); }
+      20% { opacity: 1; transform: scale(1.006) translateX(-13px); filter: blur(0); }
+      35% { transform: scale(1.006) translateX(11px); }
+      50% { transform: scale(1.004) translateX(-7px); }
+      65% { transform: scale(1.002) translateX(4px); }
+      100% { opacity: 1; transform: scale(1) translateX(0); filter: blur(0); }
+    }
+
+    @keyframes stageGlitchIn {
+      0% { opacity: 0; transform: translateX(-20px) skewX(8deg); filter: blur(8px); }
+      14% { opacity: 1; transform: translateX(16px) skewX(-7deg); }
+      28% { transform: translateX(-12px) skewX(5deg); }
+      42% { transform: translateX(8px) skewX(-4deg); }
+      56% { transform: translateX(-4px) skewX(2deg); }
+      70% { transform: translateX(2px) skewX(-1deg); filter: blur(0); }
+      100% { opacity: 1; transform: translateX(0) skewX(0); filter: blur(0); }
+    }
+
+    @keyframes stageDropIn {
+      0% { opacity: 0; transform: translateY(-130px) scale(0.985); filter: blur(6px); }
+      70% { opacity: 1; transform: translateY(12px) scale(1.006); filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <img id="bg" src="" alt="" />
+    <div id="glow"></div>
+    <div id="content">
+      <div id="userText"></div>
+      <div id="messageText"></div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // UNIVERSAL ALERT HUB V8.3 - BUILT ON EXISTING V8.2 SETUP
+    // Stabil V7/V8-prinsipp:
+    // - Ingen native Twitch-event guessing
+    // - Bare General / Custom fra Streamer.bot
+    // - WebSocket på 8081
+    // - Existing ALERT / COMETEN_ALERT messages remain unchanged
+    // - Existing !alertpos and CometenAlertBox_* globals remain compatible
+    // - Full WebAdmin settings use AlertWebAdmin_Command
+    //
+    // Alert:
+    // { "type":"COMETEN_ALERT", "alert":"sub", "user":"Navn" }
+    //
+    // Layout:
+    // { "type":"COMETEN_ALERT_SETTINGS", "alert":"sub", "field":"top", "value":415, "save":true }
+    // { "type":"COMETEN_ALERT_SETTINGS", "alert":"global", "field":"offsetY", "value":20, "save":true }
+    // { "type":"COMETEN_ALERT_SETTINGS", "resetAll":true }
+
+    function cwaBuildWebSocketUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const savedHost = localStorage.getItem("cwa_ws_host");
+      const savedPort = localStorage.getItem("cwa_ws_port");
+      const host =
+        params.get("host") ||
+        savedHost ||
+        ((window.location.protocol === "http:" || window.location.protocol === "https:")
+          ? window.location.hostname
+          : "127.0.0.1");
+      const port = params.get("port") || savedPort || "8081";
+      return "ws://" + host + ":" + port + "/";
+    }
+
+    const STREAMERBOT_WS_URLS = [cwaBuildWebSocketUrl()];
+    const DEFAULT_DURATION_MS = 8000;
+    const FADE_OUT_MS = 650;
+    const DEFAULT_VOLUME = 0.85;
+    const LAYOUT_STORAGE_KEY = "cometen_alert_hub_v81_layout";
+    const ADMIN_STORAGE_KEY = "universal_alert_webadmin_v2_settings";
+    const ADMIN_ACTION_NAME = "CWA - Alerts Status";
+    const DEFAULT_ADMIN_SETTINGS = {"version":1,"profileName":"Current setup","global":{"soundEnabled":true,"defaultDuration":8000,"fadeOut":650,"defaultVolume":0.85,"fontFamily":"Impact, \"Arial Black\", Arial, sans-serif","userColor":"#ffd56a","messageColor":"#f0a900","userMaxSize":82,"userMinSize":46,"messageMaxSize":44,"messageMinSize":28,"offsetX":0,"offsetY":0},"alerts":{"follow":{"enabled":true,"image":"alert_follow.png","sound":"sounds/follow.mp3","volume":0.8,"duration":8000,"animation":"slide_up","box":{"left":560,"top":390,"width":1180,"height":360},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"sub":{"enabled":true,"image":"alert_sub.png","sound":"sounds/sub.mp3","volume":0.85,"duration":8000,"animation":"pop","box":{"left":520,"top":415,"width":1220,"height":320},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"resub":{"enabled":true,"image":"alert_resub.png","sound":"sounds/resub.mp3","volume":0.85,"duration":8000,"animation":"pop","box":{"left":570,"top":370,"width":1100,"height":370},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"gifted":{"enabled":true,"image":"alert_gifted_subs.png","sound":"sounds/gifted.mp3","volume":0.85,"duration":8000,"animation":"drop","box":{"left":535,"top":345,"width":1130,"height":390},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"giftbomb":{"enabled":true,"image":"alert_giftbomb.png","sound":"sounds/giftbomb.mp3","volume":0.9,"duration":8000,"animation":"drop","box":{"left":500,"top":345,"width":1230,"height":390},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"bits":{"enabled":true,"image":"alert_bits.png","sound":"sounds/bits.mp3","volume":0.82,"duration":8000,"animation":"glitch","box":{"left":560,"top":365,"width":1120,"height":350},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"charity":{"enabled":true,"image":"alert_donation.png","sound":"sounds/donation.mp3","volume":0.82,"duration":8000,"animation":"pop","box":{"left":585,"top":400,"width":1210,"height":330},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""},"raid":{"enabled":true,"image":"alert_raid.png","sound":"sounds/raid.mp3","volume":0.9,"duration":8000,"animation":"shake","box":{"left":430,"top":420,"width":1150,"height":330},"offsetX":0,"offsetY":0,"userSize":82,"messageSize":44,"userColor":"","messageColor":"","defaultMessage":""}}};
+
+    const ALERT_CONFIG = {
+      follow: {
+        image: "alert_follow.png",
+        sound: "sounds/follow.mp3",
+        volume: 0.80,
+        animation: "slide_up",
+        box: { left: 560, top: 390, width: 1180, height: 360 },
+        defaultMessage: () => "Welcome to the Cometen universe"
+      },
+      sub: {
+        image: "alert_sub.png",
+        sound: "sounds/sub.mp3",
+        volume: 0.85,
+        animation: "pop",
+        // Litt mer ned/sentrert enn V8.
+        box: { left: 520, top: 415, width: 1220, height: 320 },
+        defaultMessage: () => "Thank you for subscribing"
+      },
+      resub: {
+        image: "alert_resub.png",
+        sound: "sounds/resub.mp3",
+        volume: 0.85,
+        animation: "pop",
+        box: { left: 570, top: 370, width: 1100, height: 370 },
+        defaultMessage: (p) => {
+          const months = getAmount(p, ["months", "month", "amount", "count", "cumulativeMonths"]);
+          return months ? `${months} months - welcome back!` : "Welcome back to the crew";
+        }
+      },
+      gifted: {
+        image: "alert_gifted_subs.png",
+        sound: "sounds/gifted.mp3",
+        volume: 0.85,
+        animation: "drop",
+        box: { left: 535, top: 345, width: 1130, height: 390 },
+        defaultMessage: (p) => {
+          const count = getAmount(p, ["count", "amount", "gifted", "subs", "giftCount"]);
+          return count ? `Gifted ${count} sub` : "Gifted a sub";
+        }
+      },
+      giftbomb: {
+        image: "alert_giftbomb.png",
+        sound: "sounds/giftbomb.mp3",
+        volume: 0.90,
+        animation: "drop",
+        box: { left: 500, top: 345, width: 1230, height: 390 },
+        defaultMessage: (p) => {
+          const count = getAmount(p, ["count", "amount", "giftCount", "gifted", "subs", "totalGiftedSubs", "communitySubGiftCount"]);
+          return count ? `Gift bomb - ${count} subs gifted!` : "Gift bomb to the community!";
+        }
+      },
+      bits: {
+        image: "alert_bits.png",
+        sound: "sounds/bits.mp3",
+        volume: 0.82,
+        animation: "glitch",
+        box: { left: 560, top: 365, width: 1120, height: 350 },
+        defaultMessage: (p) => {
+          const bits = getAmount(p, ["bits", "amount", "count"]);
+          return bits ? `Cheered ${bits} bits` : "Cheered bits";
+        }
+      },
+      charity: {
+        image: "alert_donation.png",
+        sound: "sounds/donation.mp3",
+        volume: 0.82,
+        animation: "pop",
+        box: { left: 585, top: 400, width: 1210, height: 330 },
+        defaultMessage: (p) => {
+          const amount = firstValue(p, ["amount", "value", "donation", "total"]);
+          const currency = firstValue(p, ["currency", "currencyCode"]) || "";
+          return amount ? `Charity donation ${amount} ${currency}`.trim() : "Thank you for supporting charity";
+        }
+      },
+      raid: {
+        image: "alert_raid.png",
+        sound: "sounds/raid.mp3",
+        volume: 0.90,
+        animation: "shake",
+        box: { left: 430, top: 420, width: 1150, height: 330 },
+        defaultMessage: (p) => {
+          const viewers = getAmount(p, ["viewers", "viewerCount", "amount", "count"]);
+          return viewers ? `Raided with ${viewers} viewers` : "Raided the stream";
+        }
+      }
+    };
+
+    const ALIASES = {
+      follow: "follow",
+      follower: "follow",
+      new_follower: "follow",
+
+      sub: "sub",
+      subscriber: "sub",
+      subscription: "sub",
+      new_subscriber: "sub",
+
+      resub: "resub",
+      re_sub: "resub",
+      resubscriber: "resub",
+      re_subscription: "resub",
+
+      gifted: "gifted",
+      gift: "gifted",
+      gifted_sub: "gifted",
+      gift_sub: "gifted",
+      sub_gift: "gifted",
+      giftsub: "gifted",
+      giftedsub: "gifted",
+
+      giftbomb: "giftbomb",
+      gift_bomb: "giftbomb",
+      giftsbomb: "giftbomb",
+      gifts_bomb: "giftbomb",
+      community_gift: "giftbomb",
+      communitygift: "giftbomb",
+      community_gift_sub: "giftbomb",
+      community_gift_subs: "giftbomb",
+      communitysubgift: "giftbomb",
+      communitygiftsubs: "giftbomb",
+      sub_mystery_gift: "giftbomb",
+      submysterygift: "giftbomb",
+
+      bits: "bits",
+      bit: "bits",
+      cheer: "bits",
+
+      charity: "charity",
+      raid: "raid",
+      raider: "raid",
+
+      global: "global",
+      all: "global"
+    };
+
+    const stage = document.getElementById("stage");
+    const bg = document.getElementById("bg");
+    const userText = document.getElementById("userText");
+    const messageText = document.getElementById("messageText");
+
+    let sockets = [];
+    let queue = [];
+    let isPlaying = false;
+    let connectedUrls = new Set();
+    let activeAudio = null;
+    let layoutSettings = loadLayoutSettings();
+    let adminSettings = loadAdminSettings();
+
+    const params = new URLSearchParams(window.location.search);
+
+    function logStatus(text) {
+      console.log("[Cometen Alert Hub V8.2]", text);
+    }
+
+    function connect() {
+      sockets.forEach((s) => { try { s.close(); } catch(e) {} });
+      sockets = [];
+      connectedUrls.clear();
+
+      for (const url of STREAMERBOT_WS_URLS) {
+        connectOne(url);
+      }
+    }
+
+    function connectOne(url) {
+      let ws = null;
+
+      try {
+        ws = new WebSocket(url);
+      } catch (err) {
+        logStatus("WebSocket kunne ikke starte mot " + url);
+        return;
+      }
+
+      sockets.push(ws);
+
+      ws.addEventListener("open", () => {
+        connectedUrls.add(url);
+        logStatus("CONNECTED " + url);
+        subscribeOnlyToCustom(ws);
+        requestAdminSettings(ws);
+      });
+
+      ws.addEventListener("message", (event) => {
+        handleSocketMessage(event.data);
+      });
+
+      ws.addEventListener("close", () => {
+        connectedUrls.delete(url);
+        logStatus("lukket/frakoblet " + url);
+      });
+
+      ws.addEventListener("error", () => {
+        connectedUrls.delete(url);
+        logStatus("WebSocket error " + url);
+      });
+    }
+
+    function subscribeOnlyToCustom(ws) {
+      try {
+        ws.send(JSON.stringify({
+          request: "Subscribe",
+          id: "cometen-alert-hub-v82-custom-only-" + Date.now(),
+          events: {
+            General: ["Custom"]
+          }
+        }));
+        logStatus("Subscribe sendt: General Custom only");
+      } catch (e) {
+        logStatus("Subscribe feilet");
+      }
+    }
+
+    function requestAdminSettings(ws) {
+      try {
+        ws.send(JSON.stringify({
+          request: "DoAction",
+          id: "universal-alert-admin-load-" + Date.now(),
+          action: { name: ADMIN_ACTION_NAME },
+          args: { command: "load" }
+        }));
+      } catch (e) {
+        logStatus("Kunne ikke be om WebAdmin-innstillinger");
+      }
+    }
+
+    function handleSocketMessage(raw) {
+      if (typeof raw !== "string") return;
+
+      const trimmed = raw.trim();
+
+      if (trimmed.startsWith("ALERT|")) {
+        const pipePayload = parsePipeAlert(trimmed);
+        if (pipePayload) enqueueAlert(pipePayload);
+        return;
+      }
+
+      if (trimmed.startsWith("ALERT_SETTINGS|")) {
+        const pipeSettings = parsePipeSettings(trimmed);
+        if (pipeSettings) applyLayoutSettings(pipeSettings);
+        return;
+      }
+
+      let data = null;
+      try {
+        data = JSON.parse(trimmed);
+      } catch (e) {
+        return;
+      }
+
+      if (isSubscribeOrStatusMessage(data)) return;
+
+      const candidates = extractPayloadCandidates(data);
+
+      // Full WebAdmin-konfig må håndteres før eldre layout-kommandoer.
+      for (const candidate of candidates) {
+        const fullSettings = normalizeAdminSettingsPayload(candidate);
+        if (fullSettings) {
+          applyAdminSettingsPayload(fullSettings);
+          return;
+        }
+      }
+
+      // Settings må håndteres før alert, så layout-kommando aldri blir alert.
+      for (const candidate of candidates) {
+        const settings = normalizeSettingsPayload(candidate);
+        if (settings) {
+          applyLayoutSettings(settings);
+          return;
+        }
+      }
+
+      for (const candidate of candidates) {
+        const payload = normalizeCustomPayload(candidate);
+        if (payload) {
+          enqueueAlert(payload);
+          return;
+        }
+      }
+    }
+
+    function isSubscribeOrStatusMessage(obj) {
+      if (!obj || typeof obj !== "object") return false;
+
+      const id = String(obj.id || "");
+      const hasRequestResponseFields =
+        Object.prototype.hasOwnProperty.call(obj, "id") &&
+        (
+          Object.prototype.hasOwnProperty.call(obj, "status") ||
+          Object.prototype.hasOwnProperty.call(obj, "events") ||
+          Object.prototype.hasOwnProperty.call(obj, "error")
+        );
+
+      if (hasRequestResponseFields && id.includes("cometen-alert-hub")) return true;
+      if (Object.prototype.hasOwnProperty.call(obj, "request") && !Object.prototype.hasOwnProperty.call(obj, "alert")) return true;
+
+      return false;
+    }
+
+    function extractPayloadCandidates(input) {
+      const output = [];
+      const seen = new Set();
+
+      function add(value, depth) {
+        if (depth > 5 || value === undefined || value === null) return;
+
+        if (typeof value === "string") {
+          const text = value.trim();
+
+          if (text.startsWith("ALERT|")) {
+            const pipePayload = parsePipeAlert(text);
+            if (pipePayload) output.push(pipePayload);
+            return;
+          }
+
+          if (text.startsWith("ALERT_SETTINGS|")) {
+            const pipeSettings = parsePipeSettings(text);
+            if (pipeSettings) output.push(pipeSettings);
+            return;
+          }
+
+          const parsed = parseJsonSafe(text);
+          if (parsed) add(parsed, depth + 1);
+          return;
+        }
+
+        if (typeof value !== "object") return;
+        if (seen.has(value)) return;
+        seen.add(value);
+
+        output.push(value);
+
+        if (Object.prototype.hasOwnProperty.call(value, "data")) add(value.data, depth + 1);
+        if (Object.prototype.hasOwnProperty.call(value, "message")) add(value.message, depth + 1);
+        if (Object.prototype.hasOwnProperty.call(value, "payload")) add(value.payload, depth + 1);
+        if (Object.prototype.hasOwnProperty.call(value, "eventData")) add(value.eventData, depth + 1);
+      }
+
+      add(input, 0);
+      return output;
+    }
+
+    function parseJsonSafe(value) {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function parsePipeAlert(raw) {
+      const parts = String(raw).split("|");
+      if (parts[0] !== "ALERT") return null;
+
+      return {
+        type: "COMETEN_ALERT",
+        alert: parts[1] || "",
+        user: parts[2] || "Cometen Viewer",
+        amount: parts[3] || "",
+        viewers: parts[3] || "",
+        bits: parts[3] || "",
+        months: parts[3] || "",
+        message: parts[4] || ""
+      };
+    }
+
+    function parsePipeSettings(raw) {
+      const parts = String(raw).split("|");
+      if (parts[0] !== "ALERT_SETTINGS") return null;
+
+      return {
+        type: "COMETEN_ALERT_SETTINGS",
+        alert: parts[1] || "global",
+        field: parts[2] || "",
+        value: parts[3] || "",
+        save: true
+      };
+    }
+
+
+    function normalizeAdminSettingsPayload(data) {
+      if (!data || typeof data !== "object") return null;
+      const type = String(firstValue(data, ["type", "Type"]) || "").trim().toUpperCase();
+      if (type !== "UNIVERSAL_ALERT_ADMIN_SETTINGS" &&
+          type !== "COMETEN_ALERT_ADMIN_SETTINGS" &&
+          type !== "ALERT_ADMIN_SETTINGS" &&
+          type !== "ALERTS_SETTINGS") return null;
+      return data;
+    }
+
+    function applyAdminSettingsPayload(payload) {
+      if (!payload || typeof payload !== "object") return;
+
+      if (isTruthy(payload.resetAll)) {
+        adminSettings = cloneJson(DEFAULT_ADMIN_SETTINGS);
+        saveAdminSettings();
+        logStatus("WebAdmin-innstillinger nullstilt");
+        return;
+      }
+
+      let incoming = firstValue(payload, ["settings", "settingsJson", "value"]);
+      if (!incoming) return;
+
+      if (typeof incoming === "string") {
+        incoming = parseJsonSafe(incoming);
+      }
+
+      if (!incoming || typeof incoming !== "object") return;
+
+      adminSettings = mergeObjects(cloneJson(DEFAULT_ADMIN_SETTINGS), incoming);
+      saveAdminSettings();
+      logStatus("WebAdmin-innstillinger lastet");
+    }
+
+    function loadAdminSettings() {
+      try {
+        const raw = localStorage.getItem(ADMIN_STORAGE_KEY);
+        if (!raw) return cloneJson(DEFAULT_ADMIN_SETTINGS);
+        const parsed = JSON.parse(raw);
+        return mergeObjects(cloneJson(DEFAULT_ADMIN_SETTINGS), parsed);
+      } catch (e) {
+        return cloneJson(DEFAULT_ADMIN_SETTINGS);
+      }
+    }
+
+    function saveAdminSettings() {
+      try {
+        localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminSettings));
+      } catch (e) {}
+    }
+
+    function cloneJson(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function mergeObjects(target, source) {
+      if (!source || typeof source !== "object") return target;
+
+      for (const key of Object.keys(source)) {
+        const value = source[key];
+
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          if (!target[key] || typeof target[key] !== "object" || Array.isArray(target[key])) {
+            target[key] = {};
+          }
+          mergeObjects(target[key], value);
+        } else {
+          target[key] = value;
+        }
+      }
+
+      return target;
+    }
+
+    function getResolvedConfig(alertKey, payload) {
+      const base = ALERT_CONFIG[alertKey];
+      const global = adminSettings.global || {};
+      const override = (adminSettings.alerts && adminSettings.alerts[alertKey]) || {};
+
+      const customMessage = String(override.defaultMessage || "").trim();
+      const defaultMessage = customMessage
+        ? formatTemplate(customMessage, payload || {})
+        : base.defaultMessage(payload || {});
+
+      return {
+        enabled: override.enabled !== false,
+        image: Object.prototype.hasOwnProperty.call(override, "image") ? String(override.image || "") : base.image,
+        sound: Object.prototype.hasOwnProperty.call(override, "sound") ? String(override.sound || "") : base.sound,
+        volume: numberOr(override.volume, numberOr(global.defaultVolume, base.volume)),
+        duration: numberOr(override.duration, numberOr(global.defaultDuration, DEFAULT_DURATION_MS)),
+        animation: String(override.animation || base.animation || "fade"),
+        box: getResolvedBox(alertKey),
+        userSize: numberOr(override.userSize, numberOr(global.userMaxSize, 82)),
+        userMinSize: numberOr(override.userMinSize, numberOr(global.userMinSize, 46)),
+        messageSize: numberOr(override.messageSize, numberOr(global.messageMaxSize, 44)),
+        messageMinSize: numberOr(override.messageMinSize, numberOr(global.messageMinSize, 28)),
+        userColor: String(override.userColor || global.userColor || "#ffd56a"),
+        messageColor: String(override.messageColor || global.messageColor || "#f0a900"),
+        fontFamily: String(override.fontFamily || global.fontFamily || 'Impact, "Arial Black", Arial, sans-serif'),
+        fadeOut: numberOr(global.fadeOut, FADE_OUT_MS),
+        soundEnabled: global.soundEnabled !== false,
+        defaultMessage: defaultMessage
+      };
+    }
+
+    function formatTemplate(template, payload) {
+      const values = {
+        user: firstValue(payload, ["user", "username", "userName", "displayName", "name", "gifter", "raider"]) || "Viewer",
+        amount: firstValue(payload, ["amount", "count", "total", "bits", "viewers", "viewerCount"]) || "",
+        count: firstValue(payload, ["count", "giftCount", "amount", "totalGiftedSubs", "communitySubGiftCount"]) || "",
+        months: firstValue(payload, ["months", "cumulativeMonths", "tenure", "durationMonths"]) || "",
+        bits: firstValue(payload, ["bits", "amount", "count"]) || "",
+        viewers: firstValue(payload, ["viewers", "viewerCount", "amount", "count"]) || "",
+        currency: firstValue(payload, ["currency", "currencyCode"]) || "",
+        tier: firstValue(payload, ["tier", "subTier"]) || "",
+        message: firstValue(payload, ["message", "text", "msg", "userInput", "rawInput"]) || ""
+      };
+
+      return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key) =>
+        Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match
+      );
+    }
+
+    function normalizeSettingsPayload(data) {
+      if (!data || typeof data !== "object") return null;
+
+      const type = String(firstValue(data, ["type", "Type"]) || "").trim().toUpperCase();
+      if (type !== "COMETEN_ALERT_SETTINGS" && type !== "ALERT_SETTINGS") return null;
+
+      return data;
+    }
+
+    function applyLayoutSettings(settings) {
+      if (!settings || typeof settings !== "object") return;
+
+      if (isTruthy(settings.resetAll)) {
+        layoutSettings = {};
+        saveLayoutSettings();
+        logStatus("Layout reset all");
+        return;
+      }
+
+      const alertKey = cleanAlertKey(firstValue(settings, ["alert", "target"]) || "global");
+
+      if (alertKey !== "global" && !ALERT_CONFIG[alertKey]) {
+        logStatus("Ignorerer ukjent layout target: " + alertKey);
+        return;
+      }
+
+      if (isTruthy(settings.reset)) {
+        delete layoutSettings[alertKey];
+        saveLayoutSettings();
+        logStatus("Layout reset for " + alertKey);
+        return;
+      }
+
+      const allowedFields = {
+        left: "left",
+        top: "top",
+        width: "width",
+        height: "height",
+        offsetx: "offsetX",
+        offset_x: "offsetX",
+        offsetX: "offsetX",
+        offsety: "offsetY",
+        offset_y: "offsetY",
+        offsetY: "offsetY"
+      };
+
+      if (!layoutSettings[alertKey]) layoutSettings[alertKey] = {};
+
+      const field = firstValue(settings, ["field", "name", "setting"]);
+      const value = firstValue(settings, ["value", "amount"]);
+
+      if (field !== null && value !== null) {
+        const normalizedField = normalizeLayoutField(field);
+        if (allowedFields[normalizedField]) {
+          setLayoutNumber(alertKey, allowedFields[normalizedField], value);
+        }
+      }
+
+      for (const rawField of Object.keys(allowedFields)) {
+        const canonical = allowedFields[rawField];
+        if (Object.prototype.hasOwnProperty.call(settings, canonical)) {
+          setLayoutNumber(alertKey, canonical, settings[canonical]);
+        }
+        if (Object.prototype.hasOwnProperty.call(settings, rawField)) {
+          setLayoutNumber(alertKey, canonical, settings[rawField]);
+        }
+      }
+
+      if (settings.save !== false && String(settings.save).toLowerCase() !== "false") {
+        saveLayoutSettings();
+      }
+
+      logStatus("Layout oppdatert: " + alertKey + " " + JSON.stringify(layoutSettings[alertKey]));
+    }
+
+    function normalizeLayoutField(field) {
+      return String(field || "")
+        .trim()
+        .replace(/-/g, "_")
+        .replace(/\s+/g, "_")
+        .replace(/([a-z])([A-Z])/g, "$1_$2")
+        .toLowerCase();
+    }
+
+    function setLayoutNumber(alertKey, field, value) {
+      const num = Number(String(value).replace(",", "."));
+      if (!Number.isFinite(num)) return;
+      layoutSettings[alertKey][field] = num;
+    }
+
+    function loadLayoutSettings() {
+      try {
+        const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveLayoutSettings() {
+      try {
+        localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layoutSettings));
+      } catch (e) {}
+    }
+
+    function getResolvedBox(alertKey) {
+      const config = ALERT_CONFIG[alertKey];
+      const base = config.box;
+      const adminGlobal = adminSettings.global || {};
+      const adminAlert = (adminSettings.alerts && adminSettings.alerts[alertKey]) || {};
+      const adminBox = adminAlert.box || {};
+      const legacyGlobal = layoutSettings.global || {};
+      const legacyOverride = layoutSettings[alertKey] || {};
+
+      const baseLeft = numberOr(adminBox.left, base.left);
+      const baseTop = numberOr(adminBox.top, base.top);
+      const baseWidth = numberOr(adminBox.width, base.width);
+      const baseHeight = numberOr(adminBox.height, base.height);
+
+      return {
+        left:
+          numberOr(legacyOverride.left, baseLeft) +
+          numberOr(adminGlobal.offsetX, 0) +
+          numberOr(adminAlert.offsetX, 0) +
+          numberOr(legacyGlobal.offsetX, 0) +
+          numberOr(legacyOverride.offsetX, 0),
+        top:
+          numberOr(legacyOverride.top, baseTop) +
+          numberOr(adminGlobal.offsetY, 0) +
+          numberOr(adminAlert.offsetY, 0) +
+          numberOr(legacyGlobal.offsetY, 0) +
+          numberOr(legacyOverride.offsetY, 0),
+        width: numberOr(legacyOverride.width, baseWidth),
+        height: numberOr(legacyOverride.height, baseHeight)
+      };
+    }
+
+    function numberOr(value, fallback) {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : fallback;
+    }
+
+    function normalizeCustomPayload(data) {
+      if (!data || typeof data !== "object") return null;
+
+      const type = String(firstValue(data, ["type", "Type"]) || "").trim().toUpperCase();
+      const hasAlertField = firstValue(data, ["alert", "alertType", "alert_type", "event", "eventName", "event_type"]);
+
+      if (type !== "COMETEN_ALERT" && type !== "ALERT" && !hasAlertField) {
+        return null;
+      }
+
+      const alertRaw = hasAlertField || "";
+      const alertKey = cleanAlertKey(alertRaw);
+
+      if (!alertKey || !ALERT_CONFIG[alertKey]) {
+        return null;
+      }
+
+      const config = getResolvedConfig(alertKey, data);
+
+      const user = firstValue(data, [
+        "user", "username", "userName", "user_name", "login", "displayName", "display_name",
+        "name", "from", "sender", "gifter", "gifterName", "raider", "raiderName",
+        "subscriber", "targetUser", "targetUserName"
+      ]) || "Cometen Viewer";
+
+      let message = firstValue(data, ["message", "text", "msg", "userInput", "rawInput", "comment"]);
+
+      if (!message || cleanAlertKey(message) === alertKey) {
+        message = config.defaultMessage;
+      }
+
+      const durationRaw = firstValue(data, ["duration", "durationMs", "showMs"]);
+      const sound = firstValue(data, ["sound", "soundFile", "audio"]);
+      const volume = firstValue(data, ["volume"]);
+      const animation = firstValue(data, ["animation"]);
+
+      return {
+        alert: alertKey,
+        user: String(user),
+        message: String(message),
+        duration: clampNumber(Number(durationRaw || config.duration || DEFAULT_DURATION_MS), 1000, 60000),
+        sound: sound,
+        volume: volume,
+        animation: animation
+      };
+    }
+
+    function cleanAlertKey(value) {
+      const key = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/([a-z])([A-Z])/g, "$1_$2")
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .replace(/_alert$/, "");
+
+      const compact = key.replace(/_/g, "");
+
+      return ALIASES[key] || ALIASES[compact] || key;
+    }
+
+    function enqueueAlert(payload) {
+      queue.push(payload);
+      playNextAlert();
+    }
+
+    async function playNextAlert() {
+      if (isPlaying || queue.length === 0) return;
+      isPlaying = true;
+
+      const payload = queue.shift();
+      await showAlert(payload);
+
+      isPlaying = false;
+      playNextAlert();
+    }
+
+    function showAlert(payload) {
+      return new Promise((resolve) => {
+        const config = getResolvedConfig(payload.alert, payload);
+
+        if (!config || config.enabled === false) {
+          resolve();
+          return;
+        }
+
+        applyBox(config.box);
+        document.documentElement.style.setProperty("--user-color", config.userColor);
+        document.documentElement.style.setProperty("--message-color", config.messageColor);
+        document.documentElement.style.setProperty("--user-size", `${config.userSize}px`);
+        document.documentElement.style.setProperty("--message-size", `${config.messageSize}px`);
+        document.documentElement.style.setProperty("--alert-font", config.fontFamily);
+
+        bg.src = config.image;
+        userText.textContent = payload.user;
+        messageText.textContent = payload.message || config.defaultMessage;
+
+        fitText(userText, config.userSize, config.userMinSize);
+        fitText(messageText, config.messageSize, config.messageMinSize);
+
+        const animation = cleanAnimation(payload.animation || config.animation || "fade");
+
+        stage.className = "";
+        void stage.offsetWidth;
+        stage.classList.add("show", "anim-" + animation);
+
+        if (config.soundEnabled) {
+          const selectedSound = payload.sound !== null && payload.sound !== undefined
+            ? payload.sound
+            : config.sound;
+          const selectedVolume = payload.volume !== null && payload.volume !== undefined
+            ? payload.volume
+            : config.volume;
+          playSound(selectedSound, selectedVolume);
+        }
+
+        const duration = clampNumber(Number(payload.duration || config.duration || DEFAULT_DURATION_MS), 1000, 60000);
+
+        setTimeout(() => {
+          stage.classList.remove("show");
+          setTimeout(() => {
+            stage.className = "";
+            resolve();
+          }, config.fadeOut);
+        }, duration);
+      });
+    }
+
+    function cleanAnimation(value) {
+      const animation = String(value || "fade")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/-/g, "_");
+
+      const allowed = {
+        fade: true,
+        pop: true,
+        slide_up: true,
+        slide_left: true,
+        slide_right: true,
+        shake: true,
+        glitch: true,
+        drop: true
+      };
+
+      return allowed[animation] ? animation : "fade";
+    }
+
+    function playSound(sound, volume) {
+      if (!sound) return;
+
+      try {
+        if (activeAudio) {
+          activeAudio.pause();
+          activeAudio.currentTime = 0;
+        }
+
+        activeAudio = new Audio(sound);
+        activeAudio.volume = clampVolume(Number(volume || DEFAULT_VOLUME));
+        activeAudio.play().catch(() => {});
+      } catch (e) {}
+    }
+
+    function clampVolume(value) {
+      if (!Number.isFinite(value)) return DEFAULT_VOLUME;
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function applyBox(box) {
+      document.documentElement.style.setProperty("--alert-left", `${box.left}px`);
+      document.documentElement.style.setProperty("--alert-top", `${box.top}px`);
+      document.documentElement.style.setProperty("--alert-width", `${box.width}px`);
+      document.documentElement.style.setProperty("--alert-height", `${box.height}px`);
+    }
+
+    function fitText(el, maxPx, minPx) {
+      el.style.fontSize = `${maxPx}px`;
+      let size = maxPx;
+      const maxWidth = el.parentElement.clientWidth - 20;
+
+      while (el.scrollWidth > maxWidth && size > minPx) {
+        size -= 2;
+        el.style.fontSize = `${size}px`;
+      }
+    }
+
+    function firstValue(obj, keys) {
+      for (const key of keys) {
+        if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
+          const value = obj[key];
+          if (value !== undefined && value !== null && String(value).trim() !== "") {
+            return value;
+          }
+        }
+      }
+      return null;
+    }
+
+    function getAmount(obj, keys) {
+      const value = firstValue(obj, keys);
+      if (value === null) return null;
+      const num = Number(value);
+      return Number.isFinite(num) ? num : String(value);
+    }
+
+    function clampNumber(value, min, max) {
+      if (!Number.isFinite(value)) return DEFAULT_DURATION_MS;
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function isTruthy(value) {
+      if (value === true) return true;
+      return ["true", "1", "yes", "y"].includes(String(value || "").trim().toLowerCase());
+    }
+
+    // Lokal test i vanlig nettleser:
+    // cometen_alerts_v8_2_giftbomb.html?test=sub
+    // cometen_alerts_v8_2_giftbomb.html?test=all
+    const testAlert = params.get("test");
+
+    if (testAlert) {
+      setTimeout(() => {
+        const tests = testAlert === "all"
+          ? ["follow", "sub", "resub", "gifted", "giftbomb", "bits", "charity", "raid"]
+          : [cleanAlertKey(testAlert)];
+
+        tests.forEach((alertKey, index) => {
+          setTimeout(() => {
+            enqueueAlert({
+              alert: alertKey,
+              user: params.get("user") || "Cometen Test",
+              message: params.get("message") || "",
+              amount: params.get("amount") || "25",
+              viewers: params.get("amount") || "25",
+              count: params.get("amount") || "5",
+              giftCount: params.get("amount") || "5",
+              months: params.get("months") || "12",
+              bits: params.get("bits") || "500",
+              duration: 5500
+            });
+          }, index * 850);
+        });
+      }, 500);
+    }
+
+    connect();
+
+    setInterval(() => {
+      if (connectedUrls.size === 0) connect();
+    }, 10000);
+  </script>
+  <script src="irl-forward.js"></script>
+</body>
+</html>
