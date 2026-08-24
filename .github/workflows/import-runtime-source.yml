@@ -39,7 +39,7 @@ jobs:
           pkg=/tmp/cwa-release/CometenWebAdmin
 
           rm -rf web alerts assets streamerbot
-          mkdir -p web assets streamerbot/source streamerbot/decoded
+          mkdir -p web assets streamerbot/source streamerbot/decoded tools
 
           cp "$pkg/Cometen_WebAdmin.html" web/Cometen_WebAdmin.html
           cp "$pkg/Cometen Chat Overlay.html" web/Cometen_Chat_Overlay.html
