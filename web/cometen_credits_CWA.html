@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0" />
+  <title>Cometen Credits Roll v1.2 Easy Variables</title>
+  <style>
+    :root {
+      --gold: #f0a900;
+      --gold-light: #ffd56a;
+      --text: #f5e7bd;
+      --shadow: rgba(0, 0, 0, 0.95);
+      --panel-bg: rgba(0, 0, 0, 0.52);
+      --frame-left: 250px;
+      --frame-top: 70px;
+      --frame-width: 1420px;
+      --frame-height: 940px;
+      --viewport-left: 300px;
+      --viewport-width: 1320px;
+      --main-title-size: 90px;
+      --subtitle-size: 28px;
+      --section-title-size: 46px;
+      --names-size: 38px;
+      --small-names-size: 30px;
+      --footer-size: 52px;
+      --footer-small-size: 26px;
+      --section-gap: 74px;
+      --scroll-duration: 95s;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: transparent;
+      font-family: Impact, "Arial Black", Arial, sans-serif;
+      color: var(--text);
+    }
+
+    #stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 800ms ease;
+      pointer-events: none;
+    }
+
+    #stage.show { opacity: 1; }
+
+    #vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(240, 169, 0, 0.08), transparent 46%),
+        linear-gradient(to bottom, rgba(0,0,0,0.65), transparent 18%, transparent 75%, rgba(0,0,0,0.72));
+    }
+
+    #frame {
+      position: absolute;
+      left: var(--frame-left);
+      top: var(--frame-top);
+      width: var(--frame-width);
+      height: var(--frame-height);
+      border: 2px solid rgba(240, 169, 0, 0.55);
+      box-shadow:
+        0 0 18px rgba(240, 169, 0, 0.22),
+        inset 0 0 42px rgba(240, 169, 0, 0.08);
+      background: var(--panel-bg);
+      opacity: 0.88;
+    }
+
+    #frame::before,
+    #frame::after {
+      content: "";
+      position: absolute;
+      left: 26px;
+      right: 26px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-light), transparent);
+    }
+
+    #frame::before { top: 28px; }
+    #frame::after { bottom: 28px; }
+
+    #creditsViewport {
+      position: absolute;
+      left: var(--viewport-left);
+      top: 0;
+      width: var(--viewport-width);
+      height: 1080px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    #creditsTrack {
+      position: absolute;
+      left: 0;
+      width: var(--viewport-width);
+      top: 1080px;
+      transform: translateY(0);
+      will-change: transform;
+      padding-bottom: 180px;
+    }
+
+    #stage.show #creditsTrack.run {
+      animation-name: creditsRoll;
+      animation-duration: var(--scroll-duration);
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes creditsRoll {
+      from { transform: translateY(0); }
+      to { transform: translateY(calc(-1 * var(--roll-distance))); }
+    }
+
+    .mainTitle {
+      margin: 0 0 18px 0;
+      font-size: var(--main-title-size);
+      line-height: 1;
+      color: var(--gold-light);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px #000, 0 0 28px rgba(240, 169, 0, 0.65), 5px 5px 0 var(--shadow);
+    }
+
+    .subtitle {
+      margin: 0 0 80px 0;
+      font-family: Arial, sans-serif;
+      font-weight: 800;
+      font-size: var(--subtitle-size);
+      color: #f6d987;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px #000, 3px 3px 0 var(--shadow);
+    }
+
+    .section {
+      margin: 0 auto var(--section-gap) auto;
+      max-width: calc(var(--viewport-width) - 160px);
+    }
+
+    .sectionTitle {
+      display: inline-block;
+      margin: 0 0 22px 0;
+      padding: 8px 42px 11px 42px;
+      color: var(--gold-light);
+      font-size: var(--section-title-size);
+      line-height: 1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-top: 1px solid rgba(255, 213, 106, 0.72);
+      border-bottom: 1px solid rgba(255, 213, 106, 0.72);
+      text-shadow: 0 0 8px #000, 0 0 18px rgba(240, 169, 0, 0.45), 3px 3px 0 var(--shadow);
+    }
+
+    .names {
+      font-family: Arial, sans-serif;
+      font-weight: 900;
+      font-size: var(--names-size);
+      line-height: 1.38;
+      color: var(--text);
+      text-shadow: 0 0 8px #000, 0 0 16px #000, 3px 3px 0 var(--shadow);
+    }
+
+    .names .name {
+      display: inline-block;
+      margin: 7px 14px;
+      white-space: nowrap;
+    }
+
+    .smallNames {
+      font-size: var(--small-names-size);
+      line-height: 1.42;
+    }
+
+    .amount { color: var(--gold-light); }
+
+    .footer {
+      margin-top: 100px;
+      font-size: var(--footer-size);
+      color: var(--gold-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px #000, 0 0 22px rgba(240, 169, 0, 0.52), 4px 4px 0 var(--shadow);
+    }
+
+    .footerSmall {
+      margin-top: 22px;
+      font-family: Arial, sans-serif;
+      font-size: var(--footer-small-size);
+      font-weight: 900;
+      color: #f6d987;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px #000, 3px 3px 0 var(--shadow);
+    }
+
+    #debug {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      max-width: 900px;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.68);
+      color: #ffd56a;
+      font-family: Consolas, monospace;
+      font-size: 17px;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    body.debug #debug { display: block; }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div id="vignette"></div>
+    <div id="frame"></div>
+    <div id="creditsViewport">
+      <div id="creditsTrack"></div>
+    </div>
+  </div>
+  <div id="debug"></div>
+
+  <script>
+    "use strict";
+
+    function cwaBuildWebSocketUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const savedHost = localStorage.getItem("cwa_ws_host");
+      const savedPort = localStorage.getItem("cwa_ws_port");
+      const host =
+        params.get("host") ||
+        savedHost ||
+        ((window.location.protocol === "http:" || window.location.protocol === "https:")
+          ? window.location.hostname
+          : "127.0.0.1");
+      const port = params.get("port") || savedPort || "8081";
+      return "ws://" + host + ":" + port + "/";
+    }
+
+    const STREAMERBOT_WS_URLS = [cwaBuildWebSocketUrl()];
+    const DEFAULT_SPEED_PX_PER_SEC = 62;
+    const MIN_DURATION_SEC = 55;
+    const END_EXTRA_PX = 260;
+    const SETTINGS_KEY = "cometen_credits_roll_v11_settings";
+
+    const DEFAULT_SETTINGS = {
+      title: "END OF STREAM CREDITS",
+      subtitle: "Thank you for hanging out in the Cometen universe",
+      footer: "SEE YOU NEXT STREAM",
+      footerSmall: "Twitch: &lt;TWITCH_CHANNEL&gt; - X: &lt;X_HANDLE&gt; - YouTube: &lt;YOUTUBE_HANDLE&gt;",
+      speed: 62,
+
+      gold: "#f0a900",
+      goldLight: "#ffd56a",
+      textColor: "#f5e7bd",
+      panelBg: "rgba(0, 0, 0, 0.52)",
+
+      frameLeft: 250,
+      frameTop: 70,
+      frameWidth: 1420,
+      frameHeight: 940,
+      viewportLeft: 300,
+      viewportWidth: 1320,
+
+      mainTitleSize: 90,
+      subtitleSize: 28,
+      sectionTitleSize: 46,
+      namesSize: 38,
+      smallNamesSize: 30,
+      footerSize: 52,
+      footerSmallSize: 26,
+      sectionGap: 74
+    };
+
+    const CSS_MAP = {
+      gold: "--gold",
+      goldLight: "--gold-light",
+      textColor: "--text",
+      panelBg: "--panel-bg",
+      frameLeft: "--frame-left",
+      frameTop: "--frame-top",
+      frameWidth: "--frame-width",
+      frameHeight: "--frame-height",
+      viewportLeft: "--viewport-left",
+      viewportWidth: "--viewport-width",
+      mainTitleSize: "--main-title-size",
+      subtitleSize: "--subtitle-size",
+      sectionTitleSize: "--section-title-size",
+      namesSize: "--names-size",
+      smallNamesSize: "--small-names-size",
+      footerSize: "--footer-size",
+      footerSmallSize: "--footer-small-size",
+      sectionGap: "--section-gap"
+    };
+
+    const NUMBER_FIELDS = new Set([
+      "speed", "frameLeft", "frameTop", "frameWidth", "frameHeight",
+      "viewportLeft", "viewportWidth", "mainTitleSize", "subtitleSize",
+      "sectionTitleSize", "namesSize", "smallNamesSize", "footerSize",
+      "footerSmallSize", "sectionGap"
+    ]);
+
+    const stage = document.getElementById("stage");
+    const track = document.getElementById("creditsTrack");
+    const debug = document.getElementById("debug");
+    const params = new URLSearchParams(window.location.search);
+
+    let sockets = [];
+    let connectedUrls = new Set();
+    let activeTimer = null;
+    let settings = loadSettings();
+
+    if (params.get("debug") === "1") document.body.classList.add("debug");
+    applySettingsToCss();
+
+    function setDebug(text) {
+      console.log("[Cometen Credits Roll v1.2]", text);
+      debug.textContent = String(text);
+    }
+
+    function connect() {
+      sockets.forEach((s) => { try { s.close(); } catch(e) {} });
+      sockets = [];
+      connectedUrls.clear();
+      for (const url of STREAMERBOT_WS_URLS) connectOne(url);
+    }
+
+    function connectOne(url) {
+      let ws = null;
+      try { ws = new WebSocket(url); }
+      catch (err) { setDebug("WebSocket kunne ikke starte mot " + url); return; }
+
+      sockets.push(ws);
+
+      ws.addEventListener("open", () => {
+        connectedUrls.add(url);
+        setDebug("CONNECTED " + url);
+        subscribeOnlyToCustom(ws);
+      });
+
+      ws.addEventListener("message", (event) => handleSocketMessage(event.data));
+      ws.addEventListener("close", () => { connectedUrls.delete(url); setDebug("lukket/frakoblet " + url); });
+      ws.addEventListener("error", () => { connectedUrls.delete(url); setDebug("WebSocket error " + url); });
+    }
+
+    function subscribeOnlyToCustom(ws) {
+      try {
+        ws.send(JSON.stringify({
+          request: "Subscribe",
+          id: "cometen-credits-roll-v12-" + Date.now(),
+          events: { General: ["Custom"] }
+        }));
+        setDebug("Subscribe sendt: General Custom only");
+      } catch (e) {
+        setDebug("Subscribe feilet");
+      }
+    }
+
+    function handleSocketMessage(raw) {
+      if (typeof raw !== "string") return;
+
+      let data = null;
+      try { data = JSON.parse(raw.trim()); }
+      catch (e) { return; }
+
+      if (isSubscribeOrStatusMessage(data)) return;
+
+      const candidates = extractPayloadCandidates(data);
+
+      for (const candidate of candidates) {
+        const setup = normalizeSettingsPayload(candidate);
+        if (setup) { applyIncomingSettings(setup); return; }
+      }
+
+      for (const candidate of candidates) {
+        const payload = normalizeCreditsPayload(candidate);
+        if (!payload) continue;
+
+        if (payload.type === "COMETEN_CREDITS_STOP") {
+          stopCredits();
+          return;
+        }
+
+        if (payload.type === "COMETEN_CREDITS_ROLL") {
+          startCredits(payload);
+          return;
+        }
+      }
+    }
+
+    function isSubscribeOrStatusMessage(obj) {
+      if (!obj || typeof obj !== "object") return false;
+      const id = String(obj.id || "");
+      const hasRequestResponseFields = Object.prototype.hasOwnProperty.call(obj, "id") &&
+        (Object.prototype.hasOwnProperty.call(obj, "status") ||
+         Object.prototype.hasOwnProperty.call(obj, "events") ||
+         Object.prototype.hasOwnProperty.call(obj, "error"));
+
+      if (hasRequestResponseFields && id.includes("cometen-credits-roll")) return true;
+      if (Object.prototype.hasOwnProperty.call(obj, "request") && !Object.prototype.hasOwnProperty.call(obj, "type")) return true;
+      return false;
+    }
+
+    function extractPayloadCandidates(input) {
+      const output = [];
+      const seen = new Set();
+
+      function add(value, depth) {
+        if (depth > 5 || value === undefined || value === null) return;
+
+        if (typeof value === "string") {
+          const parsed = parseJsonSafe(value.trim());
+          if (parsed) add(parsed, depth + 1);
+          return;
+        }
+
+        if (typeof value !== "object") return;
+        if (seen.has(value)) return;
+        seen.add(value);
+        output.push(value);
+
+        if (Object.prototype.hasOwnProperty.call(value, "data")) add(value.data, depth + 1);
+        if (Object.prototype.hasOwnProperty.call(value, "message")) add(value.message, depth + 1);
+        if (Object.prototype.hasOwnProperty.call(value, "payload")) add(value.payload, depth + 1);
+        if (Object.prototype.hasOwnProperty.call(value, "eventData")) add(value.eventData, depth + 1);
+      }
+
+      add(input, 0);
+      return output;
+    }
+
+    function parseJsonSafe(value) {
+      try { return JSON.parse(value); }
+      catch (e) { return null; }
+    }
+
+    function normalizeSettingsPayload(data) {
+      if (!data || typeof data !== "object") return null;
+      const type = String(data.type || data.Type || "").trim().toUpperCase();
+      if (type !== "COMETEN_CREDITS_SETTINGS" && type !== "CREDITS_SETTINGS") return null;
+      return data;
+    }
+
+    function applyIncomingSettings(data) {
+      if (isTruthy(data.reset)) {
+        settings = Object.assign({}, DEFAULT_SETTINGS);
+        saveSettings();
+        applySettingsToCss();
+        setDebug("Settings reset");
+        return;
+      }
+
+      const field = normalizeFieldName(data.field || data.name || data.setting || "");
+      const value = data.value;
+      const canonical = canonicalField(field);
+
+      if (!canonical) {
+        setDebug("Unknown setting field: " + field);
+        return;
+      }
+
+      if (NUMBER_FIELDS.has(canonical)) {
+        const num = Number(String(value).replace(",", "."));
+        if (!Number.isFinite(num)) {
+          setDebug("Invalid number for " + canonical + ": " + value);
+          return;
+        }
+        settings[canonical] = num;
+      } else {
+        settings[canonical] = String(value ?? "");
+      }
+
+      if (data.save !== false && String(data.save).toLowerCase() !== "false") saveSettings();
+      applySettingsToCss();
+      setDebug("Setting updated: " + canonical + " = " + settings[canonical]);
+    }
+
+    function normalizeFieldName(value) {
+      return String(value || "")
+        .trim()
+        .replace(/[-\s]+/g, "_")
+        .replace(/([a-z])([A-Z])/g, "$1_$2")
+        .toLowerCase();
+    }
+
+    function canonicalField(field) {
+      const aliases = {
+        title: "title", main_title: "title", heading: "title",
+        subtitle: "subtitle", sub_title: "subtitle",
+        footer: "footer", footersmall: "footerSmall", footer_small: "footerSmall",
+        speed: "speed", scroll_speed: "speed",
+        gold: "gold", goldlight: "goldLight", gold_light: "goldLight",
+        text: "textColor", textcolor: "textColor", text_color: "textColor",
+        panel: "panelBg", panelbg: "panelBg", panel_bg: "panelBg", background: "panelBg",
+        frameleft: "frameLeft", frame_left: "frameLeft",
+        frametop: "frameTop", frame_top: "frameTop",
+        framewidth: "frameWidth", frame_width: "frameWidth",
+        frameheight: "frameHeight", frame_height: "frameHeight",
+        viewportleft: "viewportLeft", viewport_left: "viewportLeft",
+        viewportwidth: "viewportWidth", viewport_width: "viewportWidth",
+        maintitlesize: "mainTitleSize", main_title_size: "mainTitleSize",
+        titlesize: "mainTitleSize", title_size: "mainTitleSize",
+        subtitlesize: "subtitleSize", subtitle_size: "subtitleSize",
+        sectiontitlesize: "sectionTitleSize", section_title_size: "sectionTitleSize",
+        sectionsize: "sectionTitleSize", section_size: "sectionTitleSize",
+        namessize: "namesSize", names_size: "namesSize", name_size: "namesSize",
+        smallnamessize: "smallNamesSize", small_names_size: "smallNamesSize",
+        footersize: "footerSize", footer_size: "footerSize",
+        footersmallsize: "footerSmallSize", footer_small_size: "footerSmallSize",
+        sectiongap: "sectionGap", section_gap: "sectionGap"
+      };
+      return aliases[field] || null;
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        if (!raw) return Object.assign({}, DEFAULT_SETTINGS);
+        return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(raw) || {});
+      } catch (e) {
+        return Object.assign({}, DEFAULT_SETTINGS);
+      }
+    }
+
+    function saveSettings() {
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+    }
+
+    function applySettingsToCss() {
+      for (const key of Object.keys(CSS_MAP)) {
+        const cssName = CSS_MAP[key];
+        const value = settings[key];
+        if (value === undefined || value === null) continue;
+
+        if (NUMBER_FIELDS.has(key)) {
+          document.documentElement.style.setProperty(cssName, value + "px");
+        } else {
+          document.documentElement.style.setProperty(cssName, String(value));
+        }
+      }
+    }
+
+    function normalizeCreditsPayload(data) {
+      if (!data || typeof data !== "object") return null;
+      const type = String(data.type || data.Type || "").trim().toUpperCase();
+
+      if (type === "COMETEN_CREDITS_STOP" || type === "CREDITS_STOP") {
+        return { type: "COMETEN_CREDITS_STOP" };
+      }
+
+      if (type !== "COMETEN_CREDITS_ROLL" && type !== "CREDITS_ROLL") return null;
+
+      return {
+        type: "COMETEN_CREDITS_ROLL",
+        title: data.title || settings.title,
+        subtitle: data.subtitle || settings.subtitle,
+        footer: data.footer || settings.footer,
+        footerSmall: data.footerSmall || settings.footerSmall,
+        speed: Number(data.speed || settings.speed || DEFAULT_SPEED_PX_PER_SEC),
+        sections: Array.isArray(data.sections) ? data.sections : []
+      };
+    }
+
+    function startCredits(payload) {
+      stopCredits(false);
+
+      const sections = sanitizeSections(payload.sections);
+      if (sections.length === 0) sections.push({ title: "Tonight's Crew", items: ["Thanks for being here"] });
+
+      track.innerHTML = renderCredits(payload, sections);
+      track.classList.remove("run");
+      stage.classList.remove("show");
+      void track.offsetWidth;
+
+      const contentHeight = track.scrollHeight;
+      const distance = 1080 + contentHeight + END_EXTRA_PX;
+      const speed = Number.isFinite(payload.speed) && payload.speed > 10 ? payload.speed : DEFAULT_SPEED_PX_PER_SEC;
+      const duration = Math.max(MIN_DURATION_SEC, distance / speed);
+
+      document.documentElement.style.setProperty("--roll-distance", distance + "px");
+      document.documentElement.style.setProperty("--scroll-duration", duration + "s");
+
+      stage.classList.add("show");
+      track.classList.add("run");
+
+      setDebug("Credits started. Sections: " + sections.length + " | Duration: " + Math.round(duration) + "s");
+
+      activeTimer = setTimeout(() => {
+        if (params.get("loop") === "1") startCredits(payload);
+        else stage.classList.remove("show");
+      }, duration * 1000 + 1200);
+    }
+
+    function stopCredits(clearContent) {
+      if (activeTimer) {
+        clearTimeout(activeTimer);
+        activeTimer = null;
+      }
+
+      track.classList.remove("run");
+      stage.classList.remove("show");
+
+      if (clearContent !== false) {
+        setTimeout(() => {
+          if (!stage.classList.contains("show")) track.innerHTML = "";
+        }, 900);
+      }
+
+      setDebug("Credits stopped");
+    }
+
+    function sanitizeSections(sections) {
+      const out = [];
+
+      for (const sec of sections) {
+        if (!sec || typeof sec !== "object") continue;
+        const title = String(sec.title || "").trim();
+        const items = Array.isArray(sec.items) ? sec.items : [];
+        const cleanItems = [];
+
+        for (const item of items) {
+          if (item === undefined || item === null) continue;
+
+          if (typeof item === "object") {
+            const name = String(item.name || item.user || item.username || "").trim();
+            const amount = String(item.amount || item.value || "").trim();
+            if (name) cleanItems.push({ name, amount });
+          } else {
+            const text = String(item).trim();
+            if (text) cleanItems.push({ name: text, amount: "" });
+          }
+        }
+
+        if (title && cleanItems.length > 0) out.push({ title, items: cleanItems });
+      }
+
+      return out;
+    }
+
+    function renderCredits(payload, sections) {
+      let html = "";
+      html += `<div class="mainTitle">${escapeHtml(payload.title)}</div>`;
+      html += `<div class="subtitle">${escapeHtml(payload.subtitle)}</div>`;
+
+      for (const section of sections) {
+        const smallClass = section.items.length > 14 ? " smallNames" : "";
+        html += `<div class="section">`;
+        html += `<div class="sectionTitle">${escapeHtml(section.title)}</div>`;
+        html += `<div class="names${smallClass}">`;
+
+        for (const item of section.items) {
+          const name = formatName(item.name);
+          const amount = item.amount ? ` <span class="amount">${escapeHtml(item.amount)}</span>` : "";
+          html += `<span class="name">${escapeHtml(name)}${amount}</span>`;
+        }
+
+        html += `</div></div>`;
+      }
+
+      html += `<div class="footer">${escapeHtml(payload.footer)}</div>`;
+      html += `<div class="footerSmall">${escapeHtml(payload.footerSmall)}</div>`;
+      return html;
+    }
+
+    function formatName(name) {
+      const text = String(name || "").trim();
+      if (!text) return "";
+      if (text.startsWith("@")) return text;
+      return "@" + text;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function isTruthy(value) {
+      if (value === true) return true;
+      return ["true", "1", "yes", "y"].includes(String(value || "").trim().toLowerCase());
+    }
+
+    function testPayload() {
+      return {
+        type: "COMETEN_CREDITS_ROLL",
+        title: settings.title,
+        subtitle: settings.subtitle,
+        footer: settings.footer,
+        footerSmall: settings.footerSmall,
+        speed: Number(params.get("speed") || settings.speed || DEFAULT_SPEED_PX_PER_SEC),
+        sections: [
+          { title: "New Followers", items: ["Kathrine87", "NordicViewer", "AgentPhoenix"] },
+          { title: "Subs", items: ["CometenFan", "SHDAgent"] },
+          { title: "Resubs", items: [{ name: "OldCrew", amount: "12 months" }, { name: "VikingMod", amount: "24 months" }] },
+          { title: "Gift Subs", items: ["GiftMaster", "KindViewer"] },
+          { title: "Gift Bombs", items: [{ name: "BigSupporter", amount: "5 gifted subs" }] },
+          { title: "Cheers", items: [{ name: "BitsBoss", amount: "500 bits" }, { name: "Sparkle", amount: "100 bits" }] },
+          { title: "Raiders", items: [{ name: "Mystic", amount: "18 raiders" }, { name: "Reckenin", amount: "12 raiders" }] },
+          { title: "Channel Points", items: ["Highlight Message", "Hydrate", "Stretch"] },
+          { title: "Chat Crew", items: ["Miss_Dinbat", "Gulla94", "Mystic", "Reckenin", "LurkerOne", "DivisionAgent", "PhasmoFriend"] }
+        ]
+      };
+    }
+
+    if (params.get("test") === "1") setTimeout(() => startCredits(testPayload()), 600);
+
+    connect();
+    setInterval(() => { if (connectedUrls.size === 0) connect(); }, 10000);
+  </script>
+</body>
+</html>
