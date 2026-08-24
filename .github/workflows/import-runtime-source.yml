@@ -1,0 +1,61 @@
+name: Import runtime source tree
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release-source/runtime-v1.0.zip'
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Extract sanitized runtime source
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -o .release-source/runtime-v1.0.zip -d .
+          rm -f .release-source/runtime-v1.0.zip
+          rmdir .release-source 2>/dev/null || true
+
+      - name: Verify source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f web/Cometen_WebAdmin.html
+          test -f web/Cometen_Chat_Overlay.html
+          test -f web/cometen_credits_CWA.html
+          test -f alerts/alerts.html
+          test -f alerts/irl-forward.js
+          test -f streamerbot/Cometen_WebAdmin_1.0.sb
+          test -f streamerbot/decoded/Cometen_WebAdmin_1.0.export.json
+          test -f streamerbot/SOURCE_MANIFEST.json
+          test -f tools/verify-install.ps1
+          count=$(find streamerbot/source -maxdepth 1 -type f -name '*.cs' | wc -l)
+          test "$count" -eq 59
+
+          if grep -RInE --binary-files=without-match 'discord(app)?\.com/api/webhooks|192\.168\.|[A-Za-z]:\\Users\\|D:\\stream' web alerts streamerbot tools; then
+            echo 'Potential private value found in imported source.' >&2
+            exit 1
+          fi
+
+      - name: Commit visible runtime source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A .release-source web alerts streamerbot tools
+          if git diff --cached --quiet; then
+            echo 'Source tree already current.'
+            exit 0
+          fi
+          git commit -m "Add sanitized WebAdmin 1.0 runtime source [skip ci]"
+          git push
