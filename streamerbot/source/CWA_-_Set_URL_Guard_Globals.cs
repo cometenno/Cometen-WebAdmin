@@ -39,7 +39,7 @@ public class CPHInline
             LogSkipSpotify = false,
             BlockMessage = "@{user} lenker er kun tillatt for VIP/mods.",
             AllowUsers = "",
-            InstalledVersion = "1.2.0"
+            InstalledVersion = "1.2.1"
         };
     }
 
@@ -97,7 +97,7 @@ public class CPHInline
                 {
                     parsed.BlockMessage = parsed.BlockMessage ?? "@{user} lenker er kun tillatt for VIP/mods.";
                     parsed.AllowUsers = parsed.AllowUsers ?? "";
-                    parsed.InstalledVersion = "1.2.0";
+                    parsed.InstalledVersion = "1.2.1";
                     return parsed;
                 }
             }
@@ -123,7 +123,7 @@ public class CPHInline
 
     private void SaveSettingsState(UrlGuardSettings settings)
     {
-        settings.InstalledVersion = "1.2.0";
+        settings.InstalledVersion = "1.2.1";
         string json = JsonConvert.SerializeObject(settings);
         CPH.SetGlobalVar(SettingsVariable, json, true);
         MirrorLegacyGlobals(settings);
@@ -143,7 +143,7 @@ public class CPHInline
         CPH.SetGlobalVar("CometenUrlGuard_LogSkipSpotify", settings.LogSkipSpotify ? "True" : "False", true);
         CPH.SetGlobalVar("CometenUrlGuard_BlockMessage", settings.BlockMessage ?? "", true);
         CPH.SetGlobalVar("CometenUrlGuard_AllowUsers", settings.AllowUsers ?? "", true);
-        CPH.SetGlobalVar("CometenUrlGuard_InstalledVersion", "1.2.0", true);
+        CPH.SetGlobalVar("CometenUrlGuard_InstalledVersion", "1.2.1", true);
     }
 
     private bool ReadLegacyBool(string name, bool fallback)
