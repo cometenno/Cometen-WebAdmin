@@ -1,0 +1,75 @@
+name: Publish WebAdmin 1.0.1 patch
+
+on:
+  push:
+    branches:
+      - source-import-v1.0
+    paths:
+      - '.github/RELEASE_1_0_1'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: source-import-v1.0
+
+      - name: Build public patch package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip, json
+
+          manifest = json.loads(Path('streamerbot/SOURCE_MANIFEST.json').read_text(encoding='utf-8'))
+          export_path = Path('streamerbot/decoded/Cometen_WebAdmin_1.0.export.json')
+          export = json.loads(export_path.read_text(encoding='utf-8'))
+          by_name = {a['name']: a for a in export['data']['actions']}
+
+          for item in manifest['sources']:
+              action = by_name[item['action']]
+              idx = int(item['subActionIndex'])
+              action['subActions'][idx]['byteCode'] = base64.b64encode(
+                  Path(item['file']).read_bytes()
+              ).decode('ascii')
+
+          raw = json.dumps(export, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+          payload = b'SBAE' + gzip.compress(raw, mtime=0)
+          Path('streamerbot/Cometen_WebAdmin_1.0.sb').write_text(
+              base64.b64encode(payload).decode('ascii'), encoding='utf-8'
+          )
+          PY
+
+          rm -rf /tmp/cwa-patch
+          mkdir -p /tmp/cwa-patch/CometenWebAdmin/alerts
+          mkdir -p /tmp/cwa-patch/CometenWebAdmin/tools
+
+          cp web/Cometen_WebAdmin.html /tmp/cwa-patch/CometenWebAdmin/Cometen_WebAdmin.html
+          cp web/Cometen_Chat_Overlay.html "/tmp/cwa-patch/CometenWebAdmin/Cometen Chat Overlay.html"
+          cp web/cometen_credits_CWA.html /tmp/cwa-patch/CometenWebAdmin/cometen_credits_CWA.html
+          cp -a alerts/. /tmp/cwa-patch/CometenWebAdmin/alerts/
+          cp assets/chat-pip.mp3 /tmp/cwa-patch/CometenWebAdmin/chat-pip.mp3
+          cp streamerbot/Cometen_WebAdmin_1.0.sb /tmp/cwa-patch/CometenWebAdmin/Cometen_WebAdmin_1.0.sb
+          cp tools/verify-install.ps1 /tmp/cwa-patch/CometenWebAdmin/tools/verify-install.ps1
+          cp README.md INSTALL.md CHANGELOG.md /tmp/cwa-patch/CometenWebAdmin/
+
+          cd /tmp/cwa-patch
+          zip -qr /tmp/CometenWebAdmin_1.0.1_Public.zip CometenWebAdmin
+
+      - name: Publish 1.0.1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create 1.0.1 /tmp/CometenWebAdmin_1.0.1_Public.zip \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target source-import-v1.0 \
+            --title "Cometen WebAdmin 1.0.1" \
+            --notes "Patch release: URL Guard 1.2.1 fixes false URL detection such as 'hei..dette', adds the five latest URL Guard hits to WebAdmin, and includes the rebuilt Streamer.bot import." \
+            --latest
