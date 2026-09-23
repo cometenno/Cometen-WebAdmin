@@ -1988,6 +1988,10 @@ Uses the saved Alerts settings and irl-forward.js.</div>
 
                 <label>Last blocked reason/time</label>
                 <input id="urlGuardLastInfo" type="text" readonly>
+
+                <h3 style="margin-top:20px;">Last 5 URL Guard hits</h3>
+                <div class="field-note">Newest first - loaded from the local URL Guard log on this Streamer.bot machine.</div>
+                <div id="urlGuardRecent" class="summary-last" style="min-height:150px; max-height:260px; margin-top:8px;">No logged URL Guard hits yet.</div>
             </div>
         </div>
     </section>
@@ -2615,6 +2619,27 @@ Uses the saved Alerts settings and irl-forward.js.</div>
             const reason = data.lastBlockedReason || "";
             const time = data.lastBlockedTime || "";
             info.value = [reason, time].filter(Boolean).join(" - ") || "-";
+        }
+
+        const recent = document.getElementById("urlGuardRecent");
+        if (recent) {
+            const entries = Array.isArray(data.recentEntries) ? data.recentEntries : [];
+            recent.textContent = "";
+            if (!entries.length) {
+                recent.textContent = "No logged URL Guard hits yet.";
+            } else {
+                entries.slice(0, 5).forEach((entry) => {
+                    const row = document.createElement("div");
+                    const time = entry?.time || "-";
+                    const user = entry?.user || "-";
+                    const reason = entry?.reason || "-";
+                    const url = entry?.url || "-";
+                    row.textContent = `${time} | ${user} | ${reason} | ${url}`;
+                    row.style.padding = "7px 0";
+                    row.style.borderBottom = "1px solid var(--border)";
+                    recent.appendChild(row);
+                });
+            }
         }
 
         if (data.result) log(data.result, "ok");
