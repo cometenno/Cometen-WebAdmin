@@ -231,6 +231,8 @@
   }
 
   function subscribeToEvents() {
+    // Twitch ChatMessage is the working direct chat method.
+    // General Custom is used only for optional settings update from C#.
     sendWs({
       request: "Subscribe",
       id: "cometen-chat-v6-subscribe",
@@ -276,6 +278,7 @@
   function handleIncoming(raw) {
     const rawText = String(raw || "");
 
+    // First, check optional config update from Streamer.bot globals.
     const config = parseConfigFromRaw(rawText);
     if (config) {
       applySettings(config);
@@ -331,6 +334,7 @@
   function cleanEncodedPayload(payload) {
     if (!payload) return "";
 
+    // When the broadcast string is wrapped inside JSON, trailing escaped quotes can follow the payload.
     const cutMarkers = ["\\\"", "\"", "\\n", "\n", "\r"];
 
     for (let i = 0; i < cutMarkers.length; i++) {
@@ -366,6 +370,7 @@
 
     if (source === "cometenwebadmin" && type === "chat_settings") return true;
 
+    // Fallback for direct overlay config objects from COMETEN_CHAT_CONFIG_V6.
     return Object.prototype.hasOwnProperty.call(obj, "displayTimeMs") &&
            Object.prototype.hasOwnProperty.call(obj, "maxMessages") &&
            Object.prototype.hasOwnProperty.call(obj, "textSize");

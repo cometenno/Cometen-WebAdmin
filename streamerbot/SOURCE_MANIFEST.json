@@ -3,64 +3,300 @@
   "actions": 57,
   "csharpSubActions": 59,
   "sources": [
-    {"action":"CWA - Alerts Bits","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Bits.cs"},
-    {"action":"CWA - Alerts Clear","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Clear.cs"},
-    {"action":"CWA - Alerts Donation","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Donation.cs"},
-    {"action":"CWA - Alerts Follow","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Follow.cs"},
-    {"action":"CWA - Alerts Gift Bomb","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Gift_Bomb.cs"},
-    {"action":"CWA - Alerts Gifted Sub","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Gifted_Sub.cs"},
-    {"action":"CWA - Alerts Raid","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Raid.cs"},
-    {"action":"CWA - Alerts Raid","subActionIndex":5,"file":"streamerbot/source/CWA_-_Alerts_Raid__2.cs"},
-    {"action":"CWA - Alerts Resub","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Resub.cs"},
-    {"action":"CWA - Alerts Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Save_Settings.cs"},
-    {"action":"CWA - Alerts Send Config","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Send_Config.cs"},
-    {"action":"CWA - Alerts Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Status.cs"},
-    {"action":"CWA - Alerts Sub","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Sub.cs"},
-    {"action":"CWA - Alerts Test","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_Test.cs"},
-    {"action":"CWA - Alerts YouTube Sub","subActionIndex":0,"file":"streamerbot/source/CWA_-_Alerts_YouTube_Sub.cs"},
-    {"action":"CWA - Chat Pip Message","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Pip_Message.cs"},
-    {"action":"CWA - Chat Pip Reset Session","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Pip_Reset_Session.cs"},
-    {"action":"CWA - Chat Pip Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Pip_Save_Settings.cs"},
-    {"action":"CWA - Chat Pip Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Pip_Status.cs"},
-    {"action":"CWA - Chat Pip Stream Online Reset","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Pip_Stream_Online_Reset.cs"},
-    {"action":"CWA - Chat Pip Test","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Pip_Test.cs"},
-    {"action":"CWA - Chat Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Save_Settings.cs"},
-    {"action":"CWA - Chat Send Config","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Send_Config.cs"},
-    {"action":"CWA - Chat Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Chat_Status.cs"},
-    {"action":"CWA - Cheers","subActionIndex":0,"file":"streamerbot/source/CWA_-_Cheers.cs"},
-    {"action":"CWA - Cheers Reset","subActionIndex":0,"file":"streamerbot/source/CWA_-_Cheers_Reset.cs"},
-    {"action":"CWA - Cheers Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Cheers_Save_Settings.cs"},
-    {"action":"CWA - Cheers Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Cheers_Status.cs"},
-    {"action":"CWA - Credits Apply Overlay Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Apply_Overlay_Settings.cs"},
-    {"action":"CWA - Credits Record Helper Snippets","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Record_Helper_Snippets.cs"},
-    {"action":"CWA - Credits Reset","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Reset.cs"},
-    {"action":"CWA - Credits Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Save_Settings.cs"},
-    {"action":"CWA - Credits Setup","subActionIndex":29,"file":"streamerbot/source/CWA_-_Credits_Setup.cs"},
-    {"action":"CWA - Credits Setup","subActionIndex":31,"file":"streamerbot/source/CWA_-_Credits_Setup__2.cs"},
-    {"action":"CWA - Credits Show","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Show.cs"},
-    {"action":"CWA - Credits Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Status.cs"},
-    {"action":"CWA - Credits Stop","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Stop.cs"},
-    {"action":"CWA - Credits Test Send","subActionIndex":0,"file":"streamerbot/source/CWA_-_Credits_Test_Send.cs"},
-    {"action":"CWA - Live Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Live_Save_Settings.cs"},
-    {"action":"CWA - Live Send Announcement","subActionIndex":1,"file":"streamerbot/source/CWA_-_Live_Send_Announcement.cs"},
-    {"action":"CWA - Live Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Live_Status.cs"},
-    {"action":"CWA - Set Alerts Globals","subActionIndex":0,"file":"streamerbot/source/CWA_-_Set_Alerts_Globals.cs"},
-    {"action":"CWA - Set Chat Globals","subActionIndex":29,"file":"streamerbot/source/CWA_-_Set_Chat_Globals.cs"},
-    {"action":"CWA - Set Chat Pip Globals","subActionIndex":24,"file":"streamerbot/source/CWA_-_Set_Chat_Pip_Globals.cs"},
-    {"action":"CWA - Set Cheers Globals","subActionIndex":8,"file":"streamerbot/source/CWA_-_Set_Cheers_Globals.cs"},
-    {"action":"CWA - Set Credits Globals","subActionIndex":29,"file":"streamerbot/source/CWA_-_Set_Credits_Globals.cs"},
-    {"action":"CWA - Set Live Globals","subActionIndex":17,"file":"streamerbot/source/CWA_-_Set_Live_Globals.cs"},
-    {"action":"CWA - Set Summary Globals","subActionIndex":43,"file":"streamerbot/source/CWA_-_Set_Summary_Globals.cs"},
-    {"action":"CWA - Set URL Guard Globals","subActionIndex":0,"file":"streamerbot/source/CWA_-_Set_URL_Guard_Globals.cs"},
-    {"action":"CWA - Summary Reset","subActionIndex":0,"file":"streamerbot/source/CWA_-_Summary_Reset.cs"},
-    {"action":"CWA - Summary Runtime Events","subActionIndex":0,"file":"streamerbot/source/CWA_-_Summary_Runtime_Events.cs"},
-    {"action":"CWA - Summary Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_Summary_Save_Settings.cs"},
-    {"action":"CWA - Summary Send","subActionIndex":0,"file":"streamerbot/source/CWA_-_Summary_Send.cs"},
-    {"action":"CWA - Summary Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_Summary_Status.cs"},
-    {"action":"CWA - Summary Stream Started","subActionIndex":0,"file":"streamerbot/source/CWA_-_Summary_Stream_Started.cs"},
-    {"action":"CWA - URL Guard","subActionIndex":0,"file":"streamerbot/source/CWA_-_URL_Guard.cs"},
-    {"action":"CWA - URL Guard Reset Session","subActionIndex":0,"file":"streamerbot/source/CWA_-_URL_Guard_Reset_Session.cs"},
-    {"action":"CWA - URL Guard Save Settings","subActionIndex":0,"file":"streamerbot/source/CWA_-_URL_Guard_Save_Settings.cs"},
-    {"action":"CWA - URL Guard Status","subActionIndex":0,"file":"streamerbot/source/CWA_-_URL_Guard_Status.cs"}
+    {
+      "action": "CWA - Alerts Bits",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Bits.cs"
+    },
+    {
+      "action": "CWA - Alerts Clear",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Clear.cs"
+    },
+    {
+      "action": "CWA - Alerts Donation",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Donation.cs"
+    },
+    {
+      "action": "CWA - Alerts Follow",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Follow.cs"
+    },
+    {
+      "action": "CWA - Alerts Gift Bomb",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Gift_Bomb.cs"
+    },
+    {
+      "action": "CWA - Alerts Gifted Sub",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Gifted_Sub.cs"
+    },
+    {
+      "action": "CWA - Alerts Raid",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Raid.cs"
+    },
+    {
+      "action": "CWA - Alerts Raid",
+      "subActionIndex": 5,
+      "file": "streamerbot/source/CWA_-_Alerts_Raid__2.cs"
+    },
+    {
+      "action": "CWA - Alerts Resub",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Resub.cs"
+    },
+    {
+      "action": "CWA - Alerts Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Alerts Send Config",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Send_Config.cs"
+    },
+    {
+      "action": "CWA - Alerts Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Status.cs"
+    },
+    {
+      "action": "CWA - Alerts Sub",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Sub.cs"
+    },
+    {
+      "action": "CWA - Alerts Test",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_Test.cs"
+    },
+    {
+      "action": "CWA - Alerts YouTube Sub",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Alerts_YouTube_Sub.cs"
+    },
+    {
+      "action": "CWA - Chat Pip Message",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Pip_Message.cs"
+    },
+    {
+      "action": "CWA - Chat Pip Reset Session",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Pip_Reset_Session.cs"
+    },
+    {
+      "action": "CWA - Chat Pip Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Pip_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Chat Pip Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Pip_Status.cs"
+    },
+    {
+      "action": "CWA - Chat Pip Stream Online Reset",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Pip_Stream_Online_Reset.cs"
+    },
+    {
+      "action": "CWA - Chat Pip Test",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Pip_Test.cs"
+    },
+    {
+      "action": "CWA - Chat Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Chat Send Config",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Send_Config.cs"
+    },
+    {
+      "action": "CWA - Chat Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Chat_Status.cs"
+    },
+    {
+      "action": "CWA - Cheers",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Cheers.cs"
+    },
+    {
+      "action": "CWA - Cheers Reset",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Cheers_Reset.cs"
+    },
+    {
+      "action": "CWA - Cheers Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Cheers_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Cheers Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Cheers_Status.cs"
+    },
+    {
+      "action": "CWA - Credits Apply Overlay Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Apply_Overlay_Settings.cs"
+    },
+    {
+      "action": "CWA - Credits Record Helper Snippets",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Record_Helper_Snippets.cs"
+    },
+    {
+      "action": "CWA - Credits Reset",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Reset.cs"
+    },
+    {
+      "action": "CWA - Credits Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Credits Setup",
+      "subActionIndex": 29,
+      "file": "streamerbot/source/CWA_-_Credits_Setup.cs"
+    },
+    {
+      "action": "CWA - Credits Setup",
+      "subActionIndex": 31,
+      "file": "streamerbot/source/CWA_-_Credits_Setup__2.cs"
+    },
+    {
+      "action": "CWA - Credits Show",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Show.cs"
+    },
+    {
+      "action": "CWA - Credits Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Status.cs"
+    },
+    {
+      "action": "CWA - Credits Stop",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Stop.cs"
+    },
+    {
+      "action": "CWA - Credits Test Send",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Credits_Test_Send.cs"
+    },
+    {
+      "action": "CWA - Live Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Live_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Live Send Announcement",
+      "subActionIndex": 1,
+      "file": "streamerbot/source/CWA_-_Live_Send_Announcement.cs"
+    },
+    {
+      "action": "CWA - Live Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Live_Status.cs"
+    },
+    {
+      "action": "CWA - Set Alerts Globals",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Set_Alerts_Globals.cs"
+    },
+    {
+      "action": "CWA - Set Chat Globals",
+      "subActionIndex": 29,
+      "file": "streamerbot/source/CWA_-_Set_Chat_Globals.cs"
+    },
+    {
+      "action": "CWA - Set Chat Pip Globals",
+      "subActionIndex": 24,
+      "file": "streamerbot/source/CWA_-_Set_Chat_Pip_Globals.cs"
+    },
+    {
+      "action": "CWA - Set Cheers Globals",
+      "subActionIndex": 8,
+      "file": "streamerbot/source/CWA_-_Set_Cheers_Globals.cs"
+    },
+    {
+      "action": "CWA - Set Credits Globals",
+      "subActionIndex": 29,
+      "file": "streamerbot/source/CWA_-_Set_Credits_Globals.cs"
+    },
+    {
+      "action": "CWA - Set Live Globals",
+      "subActionIndex": 17,
+      "file": "streamerbot/source/CWA_-_Set_Live_Globals.cs"
+    },
+    {
+      "action": "CWA - Set Summary Globals",
+      "subActionIndex": 43,
+      "file": "streamerbot/source/CWA_-_Set_Summary_Globals.cs"
+    },
+    {
+      "action": "CWA - Set URL Guard Globals",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Set_URL_Guard_Globals.cs"
+    },
+    {
+      "action": "CWA - Summary Reset",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Summary_Reset.cs"
+    },
+    {
+      "action": "CWA - Summary Runtime Events",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Summary_Runtime_Events.cs"
+    },
+    {
+      "action": "CWA - Summary Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Summary_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - Summary Send",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Summary_Send.cs"
+    },
+    {
+      "action": "CWA - Summary Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Summary_Status.cs"
+    },
+    {
+      "action": "CWA - Summary Stream Started",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_Summary_Stream_Started.cs"
+    },
+    {
+      "action": "CWA - URL Guard",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_URL_Guard.cs"
+    },
+    {
+      "action": "CWA - URL Guard Reset Session",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_URL_Guard_Reset_Session.cs"
+    },
+    {
+      "action": "CWA - URL Guard Save Settings",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_URL_Guard_Save_Settings.cs"
+    },
+    {
+      "action": "CWA - URL Guard Status",
+      "subActionIndex": 0,
+      "file": "streamerbot/source/CWA_-_URL_Guard_Status.cs"
+    }
   ]
 }
