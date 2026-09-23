@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -41,7 +42,7 @@ public class CPHInline
             LogSkipSpotify = false,
             BlockMessage = "@{user} lenker er kun tillatt for VIP/mods.",
             AllowUsers = "",
-            InstalledVersion = "1.2.0"
+            InstalledVersion = "1.2.1"
         };
     }
 
@@ -68,7 +69,7 @@ public class CPHInline
                 {
                     parsed.BlockMessage = parsed.BlockMessage ?? "@{user} lenker er kun tillatt for VIP/mods.";
                     parsed.AllowUsers = parsed.AllowUsers ?? "";
-                    parsed.InstalledVersion = "1.2.0";
+                    parsed.InstalledVersion = "1.2.1";
                     return parsed;
                 }
             }
@@ -94,7 +95,7 @@ public class CPHInline
 
     private void SaveSettingsState(UrlGuardSettings settings)
     {
-        settings.InstalledVersion = "1.2.0";
+        settings.InstalledVersion = "1.2.1";
         string json = JsonConvert.SerializeObject(settings);
         CPH.SetGlobalVar(SettingsVariable, json, true);
         MirrorLegacyGlobals(settings);
@@ -114,7 +115,7 @@ public class CPHInline
         CPH.SetGlobalVar("CometenUrlGuard_LogSkipSpotify", settings.LogSkipSpotify ? "True" : "False", true);
         CPH.SetGlobalVar("CometenUrlGuard_BlockMessage", settings.BlockMessage ?? "", true);
         CPH.SetGlobalVar("CometenUrlGuard_AllowUsers", settings.AllowUsers ?? "", true);
-        CPH.SetGlobalVar("CometenUrlGuard_InstalledVersion", "1.2.0", true);
+        CPH.SetGlobalVar("CometenUrlGuard_InstalledVersion", "1.2.1", true);
     }
 
     private bool ReadLegacyBool(string name, bool fallback)
@@ -167,7 +168,8 @@ public class CPHInline
             lastBlockedUser = GetSessionString("CometenUrlGuard_LastBlockedUser", ""),
             lastBlockedReason = GetSessionString("CometenUrlGuard_LastBlockedReason", ""),
             lastBlockedTime = GetSessionString("CometenUrlGuard_LastBlockedTime", ""),
-            installedVersion = "1.2.0",
+            recentEntries = ReadRecentEntries(),
+            installedVersion = "1.2.1",
             result = result
         };
 
@@ -177,6 +179,51 @@ public class CPHInline
     private string GetLogPath()
     {
         return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "CWA_URL_Guard_Deleted_URLs.log");
+    }
+
+    private object[] ReadRecentEntries()
+    {
+        try
+        {
+            string path = GetLogPath();
+            if (!File.Exists(path))
+                return new object[0];
+
+            Queue<string> tail = new Queue<string>();
+            foreach (string line in File.ReadLines(path))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                tail.Enqueue(line);
+                while (tail.Count > 5)
+                    tail.Dequeue();
+            }
+
+            List<object> entries = new List<object>();
+            foreach (string line in tail)
+            {
+                string[] parts = line.Split(new[] { '\t' }, 4);
+                if (parts.Length < 4)
+                    continue;
+
+                entries.Add(new
+                {
+                    time = parts[0],
+                    user = parts[1],
+                    reason = parts[2],
+                    url = parts[3]
+                });
+            }
+
+            entries.Reverse();
+            return entries.ToArray();
+        }
+        catch (Exception ex)
+        {
+            CPH.LogWarn("[URL Guard] Could not read recent URL log entries: " + ex.Message);
+            return new object[0];
+        }
     }
 
     private int GetSessionInt(string name, int fallback)
