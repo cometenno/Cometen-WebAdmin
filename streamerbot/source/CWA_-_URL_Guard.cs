@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
-// Cometen WebAdmin - URL Guard runtime v1.2.0
+// Cometen WebAdmin - URL Guard runtime v1.2.1
 // Trigger: Twitch -> Chat -> Chat Message
 // Never logs URL text.
 
@@ -47,14 +47,14 @@ public class CPHInline
             LogSkipSpotify = false,
             BlockMessage = "@{user} lenker er kun tillatt for VIP/mods.",
             AllowUsers = "",
-            InstalledVersion = "1.2.0"
+            InstalledVersion = "1.2.1"
         };
     }
 
     private UrlGuardSettings _settings;
 
     private static readonly Regex UrlRegex = new Regex(
-        @"(?ix)(?:https?://|www\.)\S+|\b[a-z0-9](?:[a-z0-9-]{0,62}\.)+[a-z]{2,24}(?:[/?#]\S*)?",
+        @"(?ix)(?:https?://[^\s<>]+|www\.[^\s<>]+|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:com|org|net|info|biz|io|gg|tv|me|app|dev|co|ai|live|online|stream|store|shop|cloud|tech|site|xyz|[a-z]{2})\b(?:[/?#][^\s<>]*)?)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant
     );
 
@@ -356,7 +356,7 @@ public class CPHInline
                 {
                     parsed.BlockMessage = parsed.BlockMessage ?? "@{user} lenker er kun tillatt for VIP/mods.";
                     parsed.AllowUsers = parsed.AllowUsers ?? "";
-                    parsed.InstalledVersion = "1.2.0";
+                    parsed.InstalledVersion = "1.2.1";
                     return parsed;
                 }
             }
