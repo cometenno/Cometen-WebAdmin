@@ -1,0 +1,67 @@
+name: Rebuild Streamer.bot package
+
+on:
+  push:
+    branches:
+      - source-import-v1.0
+    paths:
+      - 'streamerbot/source/**'
+      - 'streamerbot/SOURCE_MANIFEST.json'
+      - 'web/Cometen_WebAdmin.html'
+      - '.github/workflows/rebuild-streamerbot-package.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: source-import-v1.0
+
+      - name: Rebuild decoded export and .sb package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip, json
+
+          manifest = json.loads(Path('streamerbot/SOURCE_MANIFEST.json').read_text(encoding='utf-8'))
+          export_path = Path('streamerbot/decoded/Cometen_WebAdmin_1.0.export.json')
+          export = json.loads(export_path.read_text(encoding='utf-8'))
+
+          by_name = {a['name']: a for a in export['data']['actions']}
+          for item in manifest['sources']:
+              action = by_name[item['action']]
+              idx = int(item['subActionIndex'])
+              source = Path(item['file']).read_bytes()
+              action['subActions'][idx]['byteCode'] = base64.b64encode(source).decode('ascii')
+
+          export_path.write_text(
+              json.dumps(export, ensure_ascii=False, indent=2),
+              encoding='utf-8'
+          )
+
+          raw = json.dumps(export, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+          payload = b'SBAE' + gzip.compress(raw, mtime=0)
+          Path('streamerbot/Cometen_WebAdmin_1.0.sb').write_text(
+              base64.b64encode(payload).decode('ascii'),
+              encoding='utf-8'
+          )
+          PY
+
+      - name: Commit rebuilt package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add streamerbot/decoded/Cometen_WebAdmin_1.0.export.json streamerbot/Cometen_WebAdmin_1.0.sb
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Rebuild Streamer.bot package [skip ci]"
+          git push origin HEAD:source-import-v1.0
