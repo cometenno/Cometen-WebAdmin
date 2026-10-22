@@ -327,11 +327,22 @@ public partial class CPHInline
         // Streamer.bot also emits a Gift Subscription for EACH recipient
         // of a Gift Bomb. The Gift Bomb action itself emits ONE grouped alert.
         // Skip all recipient events to avoid 5 identical single-sub alerts.
+        // Streamer.bot supplies fromGiftBomb=true for each bomb recipient.
+        // Some simulated or older events instead only carry subBombCount.
+        // A real single gifted sub normally has subBombCount=0 or no value.
         string bombRecipient = GetArg("fromGiftBomb");
-        if (string.Equals(bombRecipient, "true", StringComparison.OrdinalIgnoreCase)
-            || bombRecipient == "1")
+        string bombCountRaw = GetArg("subBombCount");
+        int bombCount = 0;
+        int.TryParse(bombCountRaw, out bombCount);
+        bool fromGiftBomb = string.Equals(bombRecipient, "true", StringComparison.OrdinalIgnoreCase)
+            || bombRecipient == "1"
+            || string.Equals(bombRecipient, "yes", StringComparison.OrdinalIgnoreCase)
+            || bombCount > 1;
+
+        if (fromGiftBomb)
         {
-            CPH.LogInfo("[Cometen Alerts] Gift Sub from Gift Bomb skipped (handled by grouped Gift Bomb).");
+            CPH.LogInfo("[Cometen Alerts] Gifted Sub recipient suppressed (Gift Bomb handles grouped alert; fromGiftBomb="
+                + bombRecipient + ", subBombCount=" + bombCount + ").");
             return true;
         }
         string alert = "gift_sub";
