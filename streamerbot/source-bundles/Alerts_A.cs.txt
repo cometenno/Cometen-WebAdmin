@@ -269,11 +269,11 @@ public class CPHInline
             "gifts", "giftCount", "communitySubGiftCount",
             "subBombCount", "amount", "count");
         if (string.IsNullOrWhiteSpace(count))
-            CPH.LogWarn("[Cometen Alerts] Gift Bomb had no valid gift count. Check the Twitch Gift Bomb trigger and its %gifts% argument.");
+            CPH.LogWarn("[Cometen Alerts] Gift Bomb had no valid gift count. Check Twitch Gift Bomb trigger and %gifts%.");
 
-        string json = "{\\\"source\\\":\\\"CometenAlerts\\\",\\\"type\\\":\\\"COMETEN_ALERT\\\"," +
-            "\\\"alert\\\":\\\"giftbomb\\\",\\\"user\\\":\\\"" + Escape(user) +
-            "\\\",\\\"count\\\":\\\"" + Escape(count) + "\\\"}";
+        string json = "{\"source\":\"CometenAlerts\",\"type\":\"COMETEN_ALERT\"," +
+            "\"alert\":\"giftbomb\",\"user\":\"" + Escape(user) +
+            "\",\"count\":\"" + Escape(count) + "\"}";
         CPH.WebsocketBroadcastString(json);
         CPH.LogInfo("[Cometen Alerts] Gift Bomb count=" +
             (count.Length > 0 ? count : "unknown") + " (one grouped alert).");
@@ -285,8 +285,8 @@ public class CPHInline
         foreach (string key in keys)
         {
             if (!args.ContainsKey(key) || args[key] == null) continue;
-            string text = args[key].ToString();
-            if (!string.IsNullOrWhiteSpace(text)) return text;
+            string value = args[key].ToString();
+            if (!string.IsNullOrWhiteSpace(value)) return value;
         }
         return "";
     }
@@ -301,10 +301,10 @@ public class CPHInline
         }
         return "";
     }
-    private string Escape(string text)
+    private string Escape(string value)
     {
-        return (text ?? "").Replace("\\", "\\\\").Replace("\\"", "\\\\"")
-                           .Replace("\\r", " ").Replace("\\n", " ");
+        return (value ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"")
+                            .Replace("\r", " ").Replace("\n", " ");
     }
 }
 
